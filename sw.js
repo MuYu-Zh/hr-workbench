@@ -7,8 +7,12 @@
  * ============================================================ */
 'use strict';
 
+// 发版时同步修改 SW_REV（与 version.json 的版本一起更新）。
+// sw.js 内容必须随版本变化，浏览器才会重新安装 Service Worker 并重建缓存，避免旧 JS 残留。
+const SW_REV = '1.1.1';
+
 const CACHE_PREFIX = 'hr-workbench-v';
-let CACHE_NAME = CACHE_PREFIX + '0';
+let CACHE_NAME = CACHE_PREFIX + SW_REV;
 
 const STATIC_ASSETS = [
   './',
