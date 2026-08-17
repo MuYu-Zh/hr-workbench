@@ -1,7 +1,7 @@
 {
   "name": "hr-workbench",
   "productName": "人事工作台",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "description": "个人人事管理：员工档案、待办备忘录、常用网址，数据本地存储",
   "main": "electron/main.js",
   "author": "MuYu-Zh",

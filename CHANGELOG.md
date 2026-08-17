@@ -2,6 +2,12 @@
 
 本项目的版本变更记录。版本号遵循 [Semantic Versioning](https://semver.org/lang/zh-CN/)。
 
+## [1.1.1] - 2026-08-17
+
+### 修复
+- **CI 桌面安装包构建**：移除国内镜像源，改用 GitHub Actions 原生下载源并改用 `npm ci`，修复 Windows/macOS 安装包构建失败
+- **CI 可观测性**：构建失败时自动把日志尾部透出到 GitHub Actions annotations，并上传构建日志 Artifact
+
 ## [1.1.0] - 2025-08-17
 
 ### 新增

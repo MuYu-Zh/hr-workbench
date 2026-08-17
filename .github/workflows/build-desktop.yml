@@ -24,20 +24,31 @@ jobs:
           node-version: 20
           cache: npm
 
-      - name: 安装依赖（走国内镜像加速）
-        run: |
-          npm config set registry https://registry.npmmirror.com
-          npm install
-        env:
-          ELECTRON_MIRROR: https://npmmirror.com/mirrors/electron/
-          ELECTRON_BUILDER_BINARIES_MIRROR: https://npmmirror.com/mirrors/electron-builder-binaries/
+      - name: 安装依赖
+        run: npm ci
 
       - name: 构建 Windows 安装包
-        run: npm run pack:win
+        shell: pwsh
         env:
           CSC_IDENTITY_AUTO_DISCOVERY: 'false'
-          ELECTRON_MIRROR: https://npmmirror.com/mirrors/electron/
-          ELECTRON_BUILDER_BINARIES_MIRROR: https://npmmirror.com/mirrors/electron-builder-binaries/
+        run: |
+          npm run pack:win *> build-win.log
+          $code = $LASTEXITCODE
+          if ($code -ne 0) {
+            Get-Content build-win.log -Tail 80 -Encoding UTF8 | ForEach-Object {
+              $escaped = $_ -replace '%', '%25' -replace "`r", '%0D' -replace "`n", '%0A'
+              Write-Output "::error file=.github/workflows/build-desktop.yml,line=35::$escaped"
+            }
+            exit $code
+          }
+
+      - name: 上传构建日志
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: hr-workbench-windows-build-log
+          path: build-win.log
+          if-no-files-found: ignore
 
       - name: 上传产物（Artifact）
         uses: actions/upload-artifact@v4
@@ -73,17 +84,30 @@ jobs:
           cache: npm
 
       - name: 安装依赖
-        run: npm install
-        env:
-          ELECTRON_MIRROR: https://npmmirror.com/mirrors/electron/
-          ELECTRON_BUILDER_BINARIES_MIRROR: https://npmmirror.com/mirrors/electron-builder-binaries/
+        run: npm ci
 
       - name: 构建 macOS 安装包（Intel + Apple Silicon）
-        run: npm run pack:mac
+        shell: bash
         env:
           CSC_IDENTITY_AUTO_DISCOVERY: 'false'
-          ELECTRON_MIRROR: https://npmmirror.com/mirrors/electron/
-          ELECTRON_BUILDER_BINARIES_MIRROR: https://npmmirror.com/mirrors/electron-builder-binaries/
+        run: |
+          npm run pack:mac > build-mac.log 2>&1
+          code=$?
+          if [ $code -ne 0 ]; then
+            tail -n 80 build-mac.log | while IFS= read -r line; do
+              line=$(printf '%s' "$line" | sed 's/%/%25/g; s/\r/%0D/g')
+              echo "::error file=.github/workflows/build-desktop.yml,line=94::$line"
+            done
+            exit $code
+          fi
+
+      - name: 上传构建日志
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: hr-workbench-macos-build-log
+          path: build-mac.log
+          if-no-files-found: ignore
 
       - name: 上传产物（Artifact）
         uses: actions/upload-artifact@v4

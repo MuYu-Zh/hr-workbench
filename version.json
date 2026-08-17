@@ -1,10 +1,11 @@
 {
-  "version": "1.1.0",
+  "version": "1.1.1",
   "name": "人事工作台",
   "repo": "MuYu-Zh/hr-workbench",
   "branch": "main",
-  "updatedAt": "2025-08-17",
+  "updatedAt": "2026-08-17",
   "notes": [
+    "修复 CI 桌面安装包构建失败",
     "新增桌面安装包：Windows（NSIS/便携版）与 macOS（DMG）",
     "新增 CI 自动构建流程（GitHub Actions）"
   ],
