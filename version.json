@@ -1,0 +1,36 @@
+{
+  "version": "1.0.0",
+  "name": "liqianyu 的人事工作台",
+  "repo": "MuYu-Zh/hr-workbench",
+  "branch": "main",
+  "updatedAt": "2025-08-17",
+  "notes": [
+    "一期功能正式发布：工作总览、员工档案管理、待办备忘录、常用网址、系统设置",
+    "PWA 可安装、文件存储模式、自动更新机制"
+  ],
+  "files": [
+    "index.html",
+    "manifest.webmanifest",
+    "sw.js",
+    "version.json",
+    "css/style.css",
+    "js/app.js",
+    "js/db.js",
+    "js/filestore.js",
+    "js/updater.js",
+    "js/ui.js",
+    "js/router.js",
+    "js/seed.js",
+    "js/utils.js",
+    "js/pages/dashboard.js",
+    "js/pages/employee.js",
+    "js/pages/todo.js",
+    "js/pages/links.js",
+    "js/pages/settings.js",
+    "icons/favicon-32.png",
+    "icons/icon-192.png",
+    "icons/icon-512.png",
+    "icons/icon-maskable-192.png",
+    "icons/icon-maskable-512.png"
+  ]
+}

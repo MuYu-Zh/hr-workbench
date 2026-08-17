@@ -1,0 +1,31 @@
+# 依赖与构建产物
+node_modules/
+npm-cache/
+npm-prefix/
+tools/node_modules/
+tools/npm-cache/
+tools/npm-prefix/
+
+# 测试临时产物
+tools/dom-*.html
+tools/edge-err*.log
+tools/shot-*.png
+tools/chrome-profile-*/
+tools/edge-profile-*/
+tools/shots/
+
+# 系统与编辑器
+.DS_Store
+Thumbs.db
+*.swp
+.idea/
+.vscode/
+*.log
+
+# 本地备份
+*.bak
+backup-*.json
+
+# 运行时数据（不应提交）
+hr-data.json
+hr-config.json

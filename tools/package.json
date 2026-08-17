@@ -1,0 +1,14 @@
+{
+  "name": "hr-workbench-tools",
+  "private": true,
+  "version": "1.0.0",
+  "description": "人事工作台测试工具（jsdom/fake-indexeddb/puppeteer-core）",
+  "scripts": {
+    "test": "node test-datalayer.js && node test-ui.js && node test-e2e.js && node test-filestore.js && node test-updater.js"
+  },
+  "dependencies": {
+    "fake-indexeddb": "^6.0.0",
+    "jsdom": "^24.0.0",
+    "puppeteer-core": "^23.0.0"
+  }
+}
