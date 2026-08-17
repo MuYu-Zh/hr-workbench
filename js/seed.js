@@ -53,7 +53,7 @@
   };
 
   var profile = {
-    get: function () { return LS.get('hr.profile', { name: '', title: '人事专员', phone: '', email: '', passwordHash: '' }); },
+    get: function () { return LS.get('hr.profile', { name: '', title: 'HR 管理', phone: '', email: '', passwordHash: '' }); },
     set: function (patch) {
       var cur = profile.get();
       var next = Object.assign({}, cur, patch);
@@ -126,7 +126,7 @@
 
   /* 默认岗位（含序列） */
   var POSITION_SEED = [
-    { name: '人事专员', departmentId: null, series: 'functional' },
+    { name: 'HR 专员', departmentId: null, series: 'functional' },
     { name: '招聘专员', departmentId: null, series: 'functional' },
     { name: '薪酬专员', departmentId: null, series: 'functional' },
     { name: '行政专员', departmentId: null, series: 'functional' },
@@ -272,7 +272,7 @@
         };
         demo.forEach(function (d) {
           d.departmentId = (depts[1] || {}).id;         // 人力资源部
-          d.positionId = (byName(positions, '人事专员') || positions[0] || {}).id;
+          d.positionId = (byName(positions, 'HR 专员') || positions[0] || {}).id;
           d.gradeId = (byName(grades, 'P2') || grades[1] || {}).id;
         });
         return HR.db.bulkAdd('employee', demo);
