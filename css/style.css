@@ -123,6 +123,15 @@ body {
 }
 .menu-group.open .g-arrow { transform: rotate(90deg); }
 
+/* 一级页面菜单与一级分组对齐 */
+.menu > .menu-item {
+  padding: 9px 12px;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--sidebar-text);
+}
+.menu > .menu-item .i-dot { display: none; }
+
 .menu-item {
   display: flex; align-items: center; gap: 10px;
   padding: 8px 12px 8px 40px;
