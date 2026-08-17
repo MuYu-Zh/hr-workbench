@@ -1,6 +1,6 @@
 /* ============================================================
  * seed.js — 种子数据与系统参数（全局命名空间 HR.seed / HR.settings）
- *  - 首次打开时初始化：sys_dict 字典、默认部门/岗位/职级、常用网址
+ *  - 首次打开时初始化：sys_dict 字典、常用网址（组织架构由用户自行维护）
  *  - localStorage 管理：hr.settings / hr.profile / hr.ui.state
  * ============================================================ */
 (function (global) {
@@ -115,47 +115,6 @@
     { group: 'priority', value: 'low', label: '低' }
   ];
 
-  /* 默认部门 */
-  var DEPT_SEED = [
-    { name: '综合管理部', parentId: null },
-    { name: '人力资源部', parentId: null },
-    { name: '财务部', parentId: null },
-    { name: '市场部', parentId: null },
-    { name: '技术部', parentId: null }
-  ];
-
-  /* 默认岗位（含序列） */
-  var POSITION_SEED = [
-    { name: 'HR 专员', departmentId: null, series: 'functional' },
-    { name: '招聘专员', departmentId: null, series: 'functional' },
-    { name: '薪酬专员', departmentId: null, series: 'functional' },
-    { name: '行政专员', departmentId: null, series: 'functional' },
-    { name: '会计', departmentId: null, series: 'functional' },
-    { name: '出纳', departmentId: null, series: 'functional' },
-    { name: '市场专员', departmentId: null, series: 'functional' },
-    { name: '产品经理', departmentId: null, series: 'professional' },
-    { name: '前端工程师', departmentId: null, series: 'professional' },
-    { name: '后端工程师', departmentId: null, series: 'professional' },
-    { name: '测试工程师', departmentId: null, series: 'professional' },
-    { name: '部门经理', departmentId: null, series: 'management' },
-    { name: '总监', departmentId: null, series: 'management' }
-  ];
-
-  /* 默认职级 */
-  var GRADE_SEED = [
-    { code: 'P1', name: '初级专员', series: 'professional', order: 1 },
-    { code: 'P2', name: '专员', series: 'professional', order: 2 },
-    { code: 'P3', name: '高级专员', series: 'professional', order: 3 },
-    { code: 'P4', name: '资深专员', series: 'professional', order: 4 },
-    { code: 'P5', name: '专家', series: 'professional', order: 5 },
-    { code: 'P6', name: '高级专家', series: 'professional', order: 6 },
-    { code: 'M1', name: '主管', series: 'management', order: 10 },
-    { code: 'M2', name: '经理', series: 'management', order: 11 },
-    { code: 'M3', name: '高级经理', series: 'management', order: 12 },
-    { code: 'M4', name: '总监', series: 'management', order: 13 },
-    { code: 'M5', name: '副总裁', series: 'management', order: 14 }
-  ];
-
   /* 默认常用网址 */
   var LINK_SEED = [
     { name: '人力资源社会保障部', url: 'https://www.mohrss.gov.cn', category: 'social_security', icon: '🏛️' },
@@ -177,29 +136,7 @@
           return Object.assign({ sortOrder: i, builtin: true }, d);
         })));
       }
-      return HR.db.getAll('department').then(function (depts) {
-        if (depts.length === 0) {
-          var deptRecs = DEPT_SEED.map(function (d) {
-            return Object.assign({ status: 'normal', sortOrder: 0, establishedDate: HR.utils.toDateStr(new Date()) }, d);
-          });
-          jobs.push(HR.db.bulkAdd('department', deptRecs));
-        }
-        return HR.db.getAll('position');
-      }).then(function (positions) {
-        if (positions.length === 0) {
-          jobs.push(HR.db.bulkAdd('position', POSITION_SEED.map(function (p) {
-            return Object.assign({ status: 'active', sortOrder: 0 }, p);
-          })));
-        }
-        return HR.db.getAll('grade');
-      }).then(function (grades) {
-        if (grades.length === 0) {
-          jobs.push(HR.db.bulkAdd('grade', GRADE_SEED.map(function (g) {
-            return Object.assign({}, g);
-          })));
-        }
-        return HR.db.getAll('quick_link');
-      }).then(function (links) {
+      return HR.db.getAll('quick_link').then(function (links) {
         if (links.length === 0) {
           jobs.push(HR.db.bulkAdd('quick_link', LINK_SEED.map(function (l, i) {
             return Object.assign({ sortOrder: i }, l);
@@ -218,7 +155,7 @@
         household: '北京市朝阳区', birthDate: '1992-05-12', idCard: '110101199205120022', phone: '13800138001',
         homePhone: '010-55667788', email: 'chenjing@example.com', address: '北京市朝阳区建国路88号',
         emergencyContact: { name: '陈父', phone: '13900139000', relation: '父亲' },
-        departmentId: null, positionId: null, gradeId: null, hireDate: '2024-03-01', regularDate: '2024-09-01',
+        departmentId: null, hireDate: '2024-03-01', regularDate: '2024-09-01',
         employmentType: 'fulltime', education: '本科', school: '北京师范大学', major: '人力资源管理',
         graduateDate: '2014-06-30', bankCardNo: '6222020200000000001', socialAccountNo: '110101199205120022',
         fundAccountNo: '110101199205120022', status: 'active', remark: ''
@@ -228,7 +165,7 @@
         household: '上海市浦东新区', birthDate: '1995-11-03', idCard: '310101199511030033', phone: '13800138002',
         homePhone: '', email: 'wanghao@example.com', address: '上海市浦东新区世纪大道100号',
         emergencyContact: { name: '王母', phone: '13900139001', relation: '母亲' },
-        departmentId: null, positionId: null, gradeId: null, hireDate: '2024-06-15', regularDate: '2024-12-15',
+        departmentId: null, hireDate: '2024-06-15', regularDate: '2024-12-15',
         employmentType: 'fulltime', education: '硕士', school: '上海交通大学', major: '计算机科学与技术',
         graduateDate: '2023-06-30', bankCardNo: '6222020200000000002', socialAccountNo: '310101199511030033',
         fundAccountNo: '310101199511030033', status: 'active', remark: ''
@@ -238,7 +175,7 @@
         household: '广州市天河区', birthDate: '1998-02-20', idCard: '440101199802200044', phone: '13800138003',
         homePhone: '', email: 'liting@example.com', address: '广州市天河区体育西路',
         emergencyContact: { name: '李父', phone: '13900139002', relation: '父亲' },
-        departmentId: null, positionId: null, gradeId: null, hireDate: '2025-01-08', regularDate: '',
+        departmentId: null, hireDate: '2025-01-08', regularDate: '',
         employmentType: 'fulltime', education: '本科', school: '中山大学', major: '市场营销',
         graduateDate: '2023-06-30', bankCardNo: '6222020200000000003', socialAccountNo: '440101199802200044',
         fundAccountNo: '440101199802200044', status: 'active', remark: '试用期'
@@ -248,7 +185,7 @@
         household: '深圳市南山区', birthDate: '1988-07-25', idCard: '440301198807250055', phone: '13800138004',
         homePhone: '', email: 'zhangwei@example.com', address: '深圳市南山区科技园',
         emergencyContact: { name: '张妻', phone: '13900139003', relation: '配偶' },
-        departmentId: null, positionId: null, gradeId: null, hireDate: '2022-10-10', regularDate: '2023-04-10',
+        departmentId: null, hireDate: '2022-10-10', regularDate: '2023-04-10',
         employmentType: 'fulltime', education: '本科', school: '华南理工大学', major: '软件工程',
         graduateDate: '2011-06-30', bankCardNo: '6222020200000000004', socialAccountNo: '440301198807250055',
         fundAccountNo: '440301198807250055', status: 'resigned',
@@ -260,23 +197,8 @@
       if (emps.length > 0) {
         return { skipped: true, count: emps.length };
       }
-      // 关联默认部门/岗位/职级
-      return Promise.all([
-        HR.db.getAll('department'),
-        HR.db.getAll('position'),
-        HR.db.getAll('grade')
-      ]).then(function (res) {
-        var depts = res[0], positions = res[1], grades = res[2];
-        var byName = function (arr, name) {
-          return arr.find(function (x) { return x.name === name; });
-        };
-        demo.forEach(function (d) {
-          d.departmentId = (depts[1] || {}).id;         // 人力资源部
-          d.positionId = (byName(positions, 'HR 专员') || positions[0] || {}).id;
-          d.gradeId = (byName(grades, 'P2') || grades[1] || {}).id;
-        });
-        return HR.db.bulkAdd('employee', demo);
-      }).then(function () { return { skipped: false, count: demo.length }; });
+      // 演示员工部门留空，由用户自行维护组织架构后分配
+      return HR.db.bulkAdd('employee', demo).then(function () { return { skipped: false, count: demo.length }; });
     });
   }
 

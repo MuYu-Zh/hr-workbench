@@ -524,12 +524,16 @@
       roster: function () {
         return db.query('employee', { filter: function (e) { return e.status === 'active'; }, sort: 'employeeNo' })
           .then(function (r) {
-            U.exportCSV('在职员工花名册_' + U.today() + '.csv',
-              ['工号', '姓名', '性别', '民族', '出生日期', '身份证号', '手机', '邮箱', '部门', '岗位', '职级', '入职日期', '转正日期', '学历', '学校', '专业'],
-              r.list.map(function (e) {
-                return [e.employeeNo, e.name, e.gender === 'male' ? '男' : '女', e.nationality, e.birthDate, e.idCard, e.phone, e.email, e.departmentId, e.positionId, e.gradeId, e.hireDate, e.regularDate, e.education, e.school, e.major];
-              }));
-            ui.toastOk('已导出 ' + r.total + ' 条');
+            return db.getAll('department').then(function (depts) {
+              var deptMap = {};
+              depts.forEach(function (d) { deptMap[d.id] = d.name; });
+              U.exportCSV('在职员工花名册_' + U.today() + '.csv',
+                ['工号', '姓名', '性别', '民族', '出生日期', '身份证号', '手机', '邮箱', '部门', '入职日期', '转正日期', '学历', '学校', '专业'],
+                r.list.map(function (e) {
+                  return [e.employeeNo, e.name, e.gender === 'male' ? '男' : '女', e.nationality, e.birthDate, e.idCard, e.phone, e.email, deptMap[e.departmentId] || '', e.hireDate, e.regularDate, e.education, e.school, e.major];
+                }));
+              ui.toastOk('已导出 ' + r.total + ' 条');
+            });
           });
       },
       resigned: function () {

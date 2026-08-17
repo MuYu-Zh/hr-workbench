@@ -10,7 +10,7 @@
   var page = {};
 
   /* ---------- 员工表单字段定义（新增/编辑共用） ---------- */
-  function employeeFields(emp, depts, positions, grades, eduOpts, empTypeOpts, maritalOpts) {
+  function employeeFields(emp, depts, eduOpts, empTypeOpts, maritalOpts) {
     return [
       { group: '基本信息' },
       { key: 'name', label: '姓名', type: 'text', required: true },
@@ -27,8 +27,6 @@
       { group: '工作信息' },
       { key: 'employeeNo', label: '工号', type: 'text', required: true, hint: '唯一，如 EM2025001' },
       { key: 'departmentId', label: '部门', type: 'select', options: depts },
-      { key: 'positionId', label: '岗位', type: 'select', options: positions },
-      { key: 'gradeId', label: '职级', type: 'select', options: grades },
       { key: 'hireDate', label: '入职日期', type: 'date', required: true },
       { key: 'regularDate', label: '转正日期', type: 'date', hint: '试用期员工留空' },
       { key: 'employmentType', label: '用工形式', type: 'select', options: empTypeOpts },
@@ -50,13 +48,11 @@
   function loadFormData() {
     return Promise.all([
       query.deptOptions(),
-      query.positionOptions(),
-      query.gradeOptions(),
       query.dictOptions('education'),
       query.dictOptions('employment_type'),
       query.dictOptions('marital_status')
     ]).then(function (r) {
-      return { depts: r[0], positions: r[1], grades: r[2], eduOpts: r[3], empTypeOpts: r[4], maritalOpts: r[5] };
+      return { depts: r[0], eduOpts: r[1], empTypeOpts: r[2], maritalOpts: r[3] };
     });
   }
 
@@ -82,11 +78,9 @@
     };
 
     Promise.all([
-      db.get('department', emp.departmentId),
-      db.get('position', emp.positionId),
-      db.get('grade', emp.gradeId)
+      db.get('department', emp.departmentId)
     ]).then(function (res) {
-      var dept = res[0], pos = res[1], grade = res[2];
+      var dept = res[0];
       var ec = emp.emergencyContact || {};
       var html =
         '<div class="detail-grid">' +
@@ -104,8 +98,6 @@
         idRow('紧急联系人', U.esc([ec.name, ec.phone, ec.relation].filter(Boolean).join(' / ') || '—')) +
         '<div class="detail-title">工作信息</div>' +
         idRow('部门', U.esc(dept ? dept.name : '—')) +
-        idRow('岗位', U.esc(pos ? pos.name : '—')) +
-        idRow('职级', U.esc(grade ? grade.code + ' ' + grade.name : '—')) +
         idRow('入职日期', U.esc(emp.hireDate || '—')) +
         idRow('转正日期', U.esc(emp.regularDate || '试用中')) +
         idRow('用工形式', { fulltime: '全职', intern: '实习', parttime: '兼职' }[emp.employmentType] || '—') +
@@ -126,7 +118,7 @@
   /* ---------- 新增 / 编辑员工弹窗 ---------- */
   function openEmployeeForm(emp, onSaved) {
     loadFormData().then(function (d) {
-      var fields = employeeFields(emp, d.depts, d.positions, d.grades, d.eduOpts, d.empTypeOpts, d.maritalOpts);
+      var fields = employeeFields(emp, d.depts, d.eduOpts, d.empTypeOpts, d.maritalOpts);
       var values = Object.assign({}, emp || {});
       if (values.emergencyContact && typeof values.emergencyContact === 'object') {
         var ec = values.emergencyContact;
@@ -176,10 +168,13 @@
       '<input class="search-input" id="roster-kw" placeholder="搜索姓名 / 工号 / 手机号">' +
       '<select class="filter-sel" id="roster-dept"><option value="">全部部门</option></select>' +
       '<button class="btn btn-primary" id="roster-add">＋ 新增员工</button>' +
+      '<button class="btn btn-ghost" id="roster-import">⬆ 导入 .xlsx</button>' +
+      '<button class="btn btn-ghost" id="roster-template">📋 下载模板</button>' +
       '<button class="btn btn-ghost" id="roster-export">⬇ 导出 CSV</button>' +
       '<span class="spacer"></span>' +
       '<button class="btn btn-sm btn-ghost" id="roster-reload">⟳ 刷新</button>' +
       '</div>' +
+      '<input type="file" id="roster-file" accept=".xlsx,.xls" style="display:none">' +
       '<div id="roster-table"></div>' +
       '<div id="roster-pager"></div>' +
       '</div>';
@@ -210,6 +205,12 @@
       openEmployeeForm(null, function () { rosterState.page = 1; loadRoster(); });
     };
     document.getElementById('roster-export').onclick = exportRoster;
+    document.getElementById('roster-import').onclick = function () { document.getElementById('roster-file').click(); };
+    document.getElementById('roster-template').onclick = downloadImportTemplate;
+    document.getElementById('roster-file').onchange = function (e) {
+      if (e.target.files && e.target.files[0]) importRosterXlsx(e.target.files[0]);
+      e.target.value = '';
+    };
     document.getElementById('roster-reload').onclick = loadRoster;
 
     loadRoster();
@@ -247,8 +248,6 @@
       { key: 'name', label: '姓名', render: function (e) { return '<strong>' + U.esc(e.name) + '</strong>' + (e.regularDate ? '' : ' <span class="badge gold">试用</span>'); } },
       { key: 'gender', label: '性别', render: function (e) { return e.gender === 'male' ? '男' : '女'; } },
       { key: 'dept', label: '部门' },
-      { key: 'pos', label: '岗位' },
-      { key: 'grade', label: '职级' },
       { key: 'hireDate', label: '入职日期', mono: true },
       { key: 'phone', label: '手机', render: function (e) { return U.maskPhone(e.phone); } },
       { key: 'education', label: '学历' },
@@ -264,19 +263,13 @@
       } }
     ];
 
-    // 异步补全名称列
-    Promise.all([
-      db.getAll('department'), db.getAll('position'), db.getAll('grade')
-    ]).then(function (res) {
-      var deptMap = {}, posMap = {}, gradeMap = {};
-      res[0].forEach(function (d) { deptMap[d.id] = d.name; });
-      res[1].forEach(function (p) { posMap[p.id] = p.name; });
-      res[2].forEach(function (g) { gradeMap[g.id] = g.code + ' · ' + g.name; });
+    // 异步补全部门名称列
+    db.getAll('department').then(function (depts) {
+      var deptMap = {};
+      depts.forEach(function (d) { deptMap[d.id] = d.name; });
 
       var cols2 = columns.map(function (c) {
         if (c.key === 'dept') return Object.assign({}, c, { render: function (e) { return U.esc(deptMap[e.departmentId] || '—'); } });
-        if (c.key === 'pos') return Object.assign({}, c, { render: function (e) { return U.esc(posMap[e.positionId] || '—'); } });
-        if (c.key === 'grade') return Object.assign({}, c, { render: function (e) { return U.esc(gradeMap[e.gradeId] || '—'); } });
         return c;
       });
 
@@ -370,25 +363,161 @@
   function exportRoster() {
     db.query('employee', { filter: function (e) { return e.status === 'active'; }, sort: 'employeeNo' })
       .then(function (r) {
-        return Promise.all([db.getAll('department'), db.getAll('position'), db.getAll('grade')]).then(function (res) {
-          var deptMap = {}, posMap = {}, gradeMap = {};
-          res[0].forEach(function (d) { deptMap[d.id] = d.name; });
-          res[1].forEach(function (p) { posMap[p.id] = p.name; });
-          res[2].forEach(function (g) { gradeMap[g.id] = g.code + ' ' + g.name; });
+        return db.getAll('department').then(function (depts) {
+          var deptMap = {};
+          depts.forEach(function (d) { deptMap[d.id] = d.name; });
           var rows = r.list.map(function (e) {
             return [
               e.employeeNo, e.name, e.gender === 'male' ? '男' : '女', e.nationality,
-              deptMap[e.departmentId] || '', posMap[e.positionId] || '', gradeMap[e.gradeId] || '',
+              deptMap[e.departmentId] || '',
               e.hireDate, e.regularDate || '试用中', { fulltime: '全职', intern: '实习', parttime: '兼职' }[e.employmentType] || '',
               e.education, e.school, e.major, e.phone, e.email, e.address
             ];
           });
           U.exportCSV('在职员工花名册_' + U.today() + '.csv',
-            ['工号', '姓名', '性别', '民族', '部门', '岗位', '职级', '入职日期', '转正日期', '用工形式', '学历', '毕业院校', '专业', '手机', '邮箱', '现住址'],
+            ['工号', '姓名', '性别', '民族', '部门', '入职日期', '转正日期', '用工形式', '学历', '毕业院校', '专业', '手机', '邮箱', '现住址'],
             rows);
           ui.toastOk('已导出 ' + rows.length + ' 条花名册数据');
         });
       });
+  }
+
+  /* ---------- xlsx 模板下载 ---------- */
+  var ROSTER_IMPORT_HEADERS = ['工号', '姓名', '性别', '民族', '出生日期', '身份证号', '手机', '邮箱', '部门', '入职日期', '转正日期', '用工形式', '学历', '毕业院校', '专业', '现住址'];
+  var ROSTER_IMPORT_FIELDS = {
+    '工号': 'employeeNo', '姓名': 'name', '性别': 'gender', '民族': 'nationality', '出生日期': 'birthDate',
+    '身份证号': 'idCard', '手机': 'phone', '邮箱': 'email', '部门': 'departmentName', '入职日期': 'hireDate',
+    '转正日期': 'regularDate', '用工形式': 'employmentType', '学历': 'education', '毕业院校': 'school',
+    '专业': 'major', '现住址': 'address'
+  };
+
+  function downloadImportTemplate() {
+    if (typeof XLSX === 'undefined') {
+      ui.toastErr('Excel 解析库未加载，请刷新页面重试');
+      return;
+    }
+    var aoa = [ROSTER_IMPORT_HEADERS];
+    aoa.push(['EM2025001', '示例员工', '女', '汉族', '1998-01-01', '', '13800000000', 'hr@example.com', '', '2026-01-01', '', '全职', '本科', '', '', '']);
+    var ws = XLSX.utils.aoa_to_sheet(aoa);
+    ws['!cols'] = ROSTER_IMPORT_HEADERS.map(function (h) { return { wch: Math.max(10, h.length * 2 + 2) }; });
+    var wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, '花名册导入');
+    XLSX.writeFile(wb, '花名册导入模板_' + U.today() + '.xlsx');
+    ui.toastOk('模板已下载');
+  }
+
+  /* ---------- xlsx 批量导入 ---------- */
+  function importRosterXlsx(file) {
+    if (typeof XLSX === 'undefined') {
+      ui.toastErr('Excel 解析库未加载，请刷新页面重试');
+      return;
+    }
+    var reader = new FileReader();
+    reader.onload = function (e) {
+      try {
+        var wb = XLSX.read(new Uint8Array(e.target.result), { type: 'array', cellDates: true });
+        var ws = wb.Sheets[wb.SheetNames[0]];
+        var rows = XLSX.utils.sheet_to_json(ws, { defval: '', raw: true });
+        processImportRows(rows);
+      } catch (err) {
+        ui.toastErr('文件解析失败：' + err.message);
+      }
+    };
+    reader.onerror = function () { ui.toastErr('文件读取失败'); };
+    reader.readAsArrayBuffer(file);
+  }
+
+  function normImportValue(field, val) {
+    if (val === undefined || val === null) return '';
+    if (field === 'gender') {
+      var g = String(val).trim();
+      if (g === '男' || g === 'male') return 'male';
+      if (g === '女' || g === 'female') return 'female';
+      return g;
+    }
+    if (field === 'employmentType') {
+      var t = String(val).trim();
+      if (t === '全职' || t === 'fulltime') return 'fulltime';
+      if (t === '实习' || t === 'intern') return 'intern';
+      if (t === '兼职' || t === 'parttime') return 'parttime';
+      return t;
+    }
+    if (field === 'birthDate' || field === 'hireDate' || field === 'regularDate') {
+      if (!val) return '';
+      var d = U.toDate(val);
+      return d ? U.toDateStr(d) : String(val);
+    }
+    return String(val).trim();
+  }
+
+  function processImportRows(rows) {
+    Promise.all([db.getAll('employee'), db.getAll('department')]).then(function (res) {
+      var emps = res[0], depts = res[1];
+      var empByNo = {};
+      emps.forEach(function (e) { if (e.employeeNo) empByNo[e.employeeNo] = e; });
+      var deptByName = {};
+      depts.forEach(function (d) { if (d.name) deptByName[d.name.trim()] = d; });
+
+      var added = 0, updated = 0, deptMiss = 0, failed = 0, failures = [];
+      var jobs = [];
+
+      rows.forEach(function (row, idx) {
+        var lineNo = idx + 2; // 表头占第 1 行
+        var data = {};
+        ROSTER_IMPORT_HEADERS.forEach(function (h) {
+          var key = ROSTER_IMPORT_FIELDS[h];
+          if (key) data[key] = normImportValue(key, row[h]);
+        });
+
+        if (!data.employeeNo || !data.name) {
+          failed++;
+          failures.push('第 ' + lineNo + ' 行：工号/姓名不能为空');
+          return;
+        }
+
+        var deptName = data.departmentName || '';
+        delete data.departmentName;
+        if (deptName) {
+          var dept = deptByName[deptName.trim()];
+          if (dept) {
+            data.departmentId = dept.id;
+          } else {
+            data.departmentId = null;
+            deptMiss++;
+          }
+        } else {
+          data.departmentId = null;
+        }
+
+        var existing = empByNo[data.employeeNo];
+        var rec;
+        if (existing) {
+          rec = Object.assign({}, existing, data);
+          updated++;
+        } else {
+          rec = Object.assign({}, data, { status: 'active' });
+          added++;
+        }
+        jobs.push(existing ? db.put('employee', rec) : db.add('employee', rec));
+      });
+
+      Promise.all(jobs).then(function () {
+        var body = document.createElement('div');
+        body.innerHTML =
+          '<div class="import-result">' +
+          '<div class="ir-row ok">✅ 成功新增：' + added + ' 条</div>' +
+          '<div class="ir-row ok">🔄 成功更新：' + updated + ' 条</div>' +
+          '<div class="ir-row warn">🏢 部门未匹配：' + deptMiss + ' 条（已留空）</div>' +
+          '<div class="ir-row err">❌ 失败：' + failed + ' 条</div>' +
+          (failures.length ? '<div class="ir-failures">' + failures.map(function (f) { return '<div>' + U.esc(f) + '</div>'; }).join('') + '</div>' : '') +
+          '</div>';
+        ui.modal({ title: '导入结果', size: 'md', body: body });
+        ui.toastOk('导入完成');
+        loadRoster();
+      }).catch(function (err) {
+        ui.toastErr('导入写入失败：' + err.message);
+      });
+    });
   }
 
   /* ---------- 离职员工档案 ---------- */
@@ -437,11 +566,9 @@
       var total = r.total;
       var start = (st.page - 1) * st.pageSize;
       var rows = r.list.slice(start, start + st.pageSize);
-      Promise.all([db.getAll('department'), db.getAll('position'), db.getAll('grade')]).then(function (res) {
-        var deptMap = {}, posMap = {}, gradeMap = {};
-        res[0].forEach(function (d) { deptMap[d.id] = d.name; });
-        res[1].forEach(function (p) { posMap[p.id] = p.name; });
-        res[2].forEach(function (g) { gradeMap[g.id] = g.code; });
+      db.getAll('department').then(function (depts) {
+        var deptMap = {};
+        depts.forEach(function (d) { deptMap[d.id] = d.name; });
 
         var columns = [
           { key: 'employeeNo', label: '工号', mono: true },
@@ -566,18 +693,14 @@
         wrap.appendChild(ui.empty('👥', '暂无在职员工'));
         return;
       }
-      Promise.all([db.getAll('department'), db.getAll('position'), db.getAll('grade')]).then(function (res) {
-        var deptMap = {}, posMap = {}, gradeMap = {};
-        res[0].forEach(function (d) { deptMap[d.id] = d.name; });
-        res[1].forEach(function (p) { posMap[p.id] = p.name; });
-        res[2].forEach(function (g) { gradeMap[g.id] = g.code; });
+      db.getAll('department').then(function (depts) {
+        var deptMap = {};
+        depts.forEach(function (d) { deptMap[d.id] = d.name; });
 
         var columns = [
           { key: 'employeeNo', label: '工号', mono: true },
           { key: 'name', label: '姓名', render: function (e) { return '<strong>' + U.esc(e.name) + '</strong>' + (e.regularDate ? '' : ' <span class="badge gold">试用</span>'); } },
           { key: 'dept', label: '部门', render: function (e) { return U.esc(deptMap[e.departmentId] || '—'); } },
-          { key: 'pos', label: '岗位', render: function (e) { return U.esc(posMap[e.positionId] || '—'); } },
-          { key: 'grade', label: '职级', render: function (e) { return U.esc(gradeMap[e.gradeId] || '—'); } },
           { key: 'hireDate', label: '入职日期', mono: true },
           { key: 'ops', label: '操作', render: function (e) {
             var div = document.createElement('div');

@@ -88,15 +88,7 @@
         { key: 'claims', label: '社保待遇申领记录', path: '/social/claims' }
       ]
     },
-    {
-      key: 'org', type: 'group', icon: '🏢', label: '组织架构管理', coming: true,
-      items: [
-        { key: 'departments', label: '部门设置与调整', path: '/org/departments' },
-        { key: 'positions', label: '岗位职级体系', path: '/org/positions' },
-        { key: 'chart', label: '组织架构图', path: '/org/chart' },
-        { key: 'headcount', label: '人员编制管理', path: '/org/headcount' }
-      ]
-    },
+    { key: 'org', type: 'page', icon: '🏢', label: '组织架构', path: '/org' },
     {
       key: 'transfer', type: 'group', icon: '🔄', label: '员工异动管理', coming: true,
       items: [

@@ -651,6 +651,81 @@ select.filter-sel {
 }
 select.filter-sel:focus { border-color: var(--accent); }
 
+/* ---------- 组织架构 ---------- */
+.org-tree-list { margin-top: 4px; }
+.org-node-row {
+  display: flex; align-items: center; gap: 10px;
+  padding: 10px 8px; border-bottom: 1px dashed var(--line-soft);
+  font-size: 13.5px;
+}
+.org-node-row:hover { background: var(--card-soft); }
+.org-toggle { width: 18px; color: var(--ink-3); font-size: 12px; flex: none; }
+.org-name { font-weight: 600; min-width: 140px; }
+.org-status {
+  font-size: 11.5px; padding: 2px 8px; border-radius: 20px;
+  background: var(--bg-deep); color: var(--ink-2);
+}
+.org-status.disabled { color: var(--ink-3); opacity: .7; }
+.org-sort { color: var(--ink-3); font-size: 12px; min-width: 30px; }
+.org-actions { margin-left: auto; display: flex; gap: 4px; }
+.btn-link {
+  background: none; border: none; cursor: pointer;
+  color: var(--info); font-size: 12.5px; padding: 2px 4px; border-radius: 4px;
+}
+.btn-link:hover { background: var(--info-soft); }
+.btn-link.act-danger { color: var(--danger); }
+.btn-link.act-danger:hover { background: var(--danger-soft); }
+
+/* 组织架构图预览 */
+.org-chart-overlay {
+  position: fixed; inset: 0; z-index: 600;
+  background: var(--bg); display: flex; flex-direction: column;
+}
+.org-chart-overlay:fullscreen { background: var(--bg); }
+.org-chart-head {
+  display: flex; align-items: center; gap: 10px;
+  padding: 12px 16px; border-bottom: 1px solid var(--line);
+  background: var(--card);
+}
+.org-chart-title { font-size: 15px; font-weight: 700; }
+.org-chart-body {
+  flex: 1; overflow: auto; padding: 30px;
+  display: flex; justify-content: center; align-items: flex-start; flex-wrap: wrap; gap: 20px;
+}
+
+.chart-node {
+  display: flex; flex-direction: column; align-items: center;
+  margin: 0 12px; position: relative;
+}
+.chart-node-name {
+  padding: 10px 18px; border-radius: 10px;
+  background: var(--card); border: 1px solid var(--line);
+  font-size: 13px; font-weight: 600; white-space: nowrap;
+  box-shadow: 0 4px 12px -6px rgba(0,0,0,.25);
+}
+.chart-node.disabled .chart-node-name { opacity: .55; border-style: dashed; color: var(--ink-3); }
+.chart-node-status { font-size: 10.5px; color: var(--ink-3); margin-top: 4px; }
+.chart-children {
+  display: flex; justify-content: center; margin-top: 18px;
+  position: relative; padding-top: 6px;
+}
+.chart-children::before {
+  content: ''; position: absolute; top: 0; left: 50%; right: 50%;
+  border-top: 1px solid var(--line); height: 0;
+}
+
+/* 导入结果 */
+.import-result { font-size: 13.5px; line-height: 2; }
+.import-result .ir-row { padding: 2px 0; }
+.import-result .ir-row.ok { color: var(--ok); }
+.import-result .ir-row.warn { color: var(--warn); }
+.import-result .ir-row.err { color: var(--danger); }
+.import-result .ir-failures {
+  margin-top: 8px; padding: 10px 12px; background: var(--bg-deep);
+  border-radius: 8px; max-height: 220px; overflow-y: auto;
+  font-size: 12px; color: var(--ink-3);
+}
+
 /* 弹窗内表格用于选择 */
 .pick-list { max-height: 320px; overflow-y: auto; }
 .pick-item {

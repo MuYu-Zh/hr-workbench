@@ -10,14 +10,12 @@
   'use strict';
 
   var DB_NAME = 'hr_workbench';
-  var DB_VERSION = 1;
+  var DB_VERSION = 2;
 
-  /* 一期使用的 store 定义（二期按数据模型 v1.2 其余表扩展，走版本升级） */
+  /* 当前使用的 store 定义（组织架构/花名册；岗位/职级已移除） */
   var STORES = {
     department:        { keyPath: 'id', indexes: { parentId: {}, status: {} } },
-    position:          { keyPath: 'id', indexes: { departmentId: {}, series: {}, status: {} } },
-    grade:             { keyPath: 'id', indexes: { code: {}, series: {} } },
-    employee:          { keyPath: 'id', indexes: { employeeNo: {}, name: {}, status: {}, departmentId: {}, positionId: {}, gradeId: {}, hireDate: {}, birthDate: {}, resignDate: {} } },
+    employee:          { keyPath: 'id', indexes: { employeeNo: {}, name: {}, status: {}, departmentId: {}, hireDate: {}, birthDate: {}, resignDate: {} } },
     employee_attachment:{ keyPath: 'id', indexes: { employeeId: {}, category: {}, expireDate: {} } },
     attachment:        { keyPath: 'id', indexes: {} },
     todo:              { keyPath: 'id', indexes: { date: {}, priority: {}, done: {} } },
@@ -36,6 +34,20 @@
       var req = indexedDB.open(DB_NAME, DB_VERSION);
       req.onupgradeneeded = function (e) {
         var db = e.target.result;
+        var tx = e.target.transaction;
+        var oldVersion = e.oldVersion;
+
+        // v1 → v2：移除岗位/职级表与员工表上的岗位/职级索引
+        if (oldVersion < 2) {
+          if (db.objectStoreNames.contains('position')) db.deleteObjectStore('position');
+          if (db.objectStoreNames.contains('grade')) db.deleteObjectStore('grade');
+          if (db.objectStoreNames.contains('employee')) {
+            var empStore = tx.objectStore('employee');
+            if (empStore.indexNames.contains('positionId')) empStore.deleteIndex('positionId');
+            if (empStore.indexNames.contains('gradeId')) empStore.deleteIndex('gradeId');
+          }
+        }
+
         Object.keys(STORES).forEach(function (name) {
           if (!db.objectStoreNames.contains(name)) {
             var cfg = STORES[name];
@@ -43,8 +55,29 @@
             Object.keys(cfg.indexes || {}).forEach(function (idx) {
               store.createIndex(idx, idx, { unique: false });
             });
+          } else {
+            var existing = tx.objectStore(name);
+            Object.keys(STORES[name].indexes || {}).forEach(function (idx) {
+              if (!existing.indexNames.contains(idx)) existing.createIndex(idx, idx, { unique: false });
+            });
           }
         });
+
+        // 清理旧员工记录中遗留的岗位/职级字段
+        if (oldVersion < 2 && db.objectStoreNames.contains('employee')) {
+          var empStore2 = tx.objectStore('employee');
+          var getAllReq = empStore2.getAll();
+          getAllReq.onsuccess = function () {
+            var list = getAllReq.result || [];
+            list.forEach(function (rec) {
+              if (rec.positionId !== undefined || rec.gradeId !== undefined) {
+                delete rec.positionId;
+                delete rec.gradeId;
+                empStore2.put(rec);
+              }
+            });
+          };
+        }
       };
       req.onsuccess = function (e) {
         var db = e.target.result;

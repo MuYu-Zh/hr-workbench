@@ -21,26 +21,13 @@
   /** 部门 options（含全部部门名 → id 映射） */
   query.deptOptions = function () {
     return db.getAll('department').then(function (list) {
-      return list.map(function (d) { return { value: d.id, label: d.name }; });
+      return list.map(function (d) {
+        return { value: d.id, label: d.name + (d.status === 'disabled' ? '（停用）' : '') };
+      });
     });
   };
 
-  /** 岗位 options */
-  query.positionOptions = function () {
-    return db.getAll('position').then(function (list) {
-      return list.filter(function (p) { return p.status !== 'disabled'; })
-        .map(function (p) { return { value: p.id, label: p.name }; });
-    });
-  };
-
-  /** 职级 options */
-  query.gradeOptions = function () {
-    return db.getAll('grade').then(function (list) {
-      return list.map(function (g) { return { value: g.id, label: g.code + ' · ' + g.name }; });
-    });
-  };
-
-  /** 名称映射：ids → name（部门/岗位/职级） */
+  /** 名称映射：ids → name */
   query.nameOf = function (store, id) {
     if (!id) return '';
     return db.get(store, id).then(function (r) { return r ? (r.name || r.code || '') : ''; });

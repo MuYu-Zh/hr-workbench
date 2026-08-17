@@ -32,6 +32,8 @@ const STATIC_ASSETS = [
   './js/pages/todo.js',
   './js/pages/links.js',
   './js/pages/settings.js',
+  './js/pages/org.js',
+  './vendor/xlsx.full.min.js',
   './icons/icon-192.png',
   './icons/icon-512.png',
   './icons/icon-maskable-192.png',
