@@ -11,6 +11,7 @@
   /* 菜单配置：group=一级分组，items=二级页面 */
   var MENU = [
     { key: 'dashboard', type: 'page', icon: '📊', label: '工作总览', path: '/dashboard' },
+    { key: 'org', type: 'page', icon: '🏢', label: '组织架构', path: '/org' },
     {
       key: 'employee', type: 'group', icon: '👥', label: '员工档案管理',
       items: [
@@ -88,7 +89,6 @@
         { key: 'claims', label: '社保待遇申领记录', path: '/social/claims' }
       ]
     },
-    { key: 'org', type: 'page', icon: '🏢', label: '组织架构', path: '/org' },
     {
       key: 'transfer', type: 'group', icon: '🔄', label: '员工异动管理', coming: true,
       items: [
