@@ -53,7 +53,7 @@
   };
 
   var profile = {
-    get: function () { return LS.get('hr.profile', { name: 'liqianyu', title: '人事专员', phone: '', email: '', passwordHash: '' }); },
+    get: function () { return LS.get('hr.profile', { name: '', title: '人事专员', phone: '', email: '', passwordHash: '' }); },
     set: function (patch) {
       var cur = profile.get();
       var next = Object.assign({}, cur, patch);

@@ -230,7 +230,7 @@
     var p = HR.profile.get();
     var box = document.getElementById('set-profile');
     box.innerHTML =
-      '<div class="set-row"><div class="set-main"><div class="set-name">' + U.esc(p.name || 'liqianyu') + '</div>' +
+      '<div class="set-row"><div class="set-main"><div class="set-name">' + U.esc(p.name || '人事专员') + '</div>' +
       '<div class="set-desc">' + U.esc(p.title || '人事专员') + '</div></div></div>' +
       '<div class="set-row"><div class="set-main"><div class="set-name">联系方式</div>' +
       '<div class="set-desc">' + U.esc(p.phone || '未填写') + ' · ' + U.esc(p.email || '未填写') + '</div></div>' +
@@ -336,7 +336,7 @@
       var prof = HR.profile.get();
       if (U.hash(input.value) === prof.passwordHash) {
         mask.remove();
-        ui.toastOk('欢迎回来，' + (prof.name || 'liqianyu'));
+        ui.toastOk('欢迎回来，' + (prof.name || '人事专员'));
       } else {
         mask.querySelector('#lock-err').textContent = '密码错误，请重试';
         input.value = '';

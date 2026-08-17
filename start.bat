@@ -1,9 +1,9 @@
 @echo off
 chcp 65001 >nul
-title liqianyu 的人事工作台 - 本地启动
+title 人事工作台 - 本地启动
 echo.
 echo  ============================================
-echo    liqianyu 的人事工作台 · 本地启动
+echo    人事工作台 · 本地启动
 echo  ============================================
 echo.
 echo  启动后请在浏览器打开: http://localhost:8765

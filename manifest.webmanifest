@@ -1,5 +1,5 @@
 {
-  "name": "liqianyu 的人事工作台",
+  "name": "人事工作台",
   "short_name": "人事工作台",
   "description": "个人人事管理：员工档案、待办备忘录、常用网址、数据本地存储",
   "start_url": "./index.html",

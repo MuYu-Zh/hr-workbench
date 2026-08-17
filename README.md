@@ -1,4 +1,4 @@
-# 🧑‍💼 liqianyu 的人事工作台 (HR Workbench)
+# 🧑‍💼 人事工作台 (HR Workbench)
 
 > 个人人事管理单页应用 · 数据本地存储 · 可安装为 PWA
 

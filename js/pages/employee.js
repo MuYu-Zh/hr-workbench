@@ -340,7 +340,7 @@
         rec.resignDate = vals.resignDate;
         return db.put('employee', rec).then(function () {
           // 写状态留痕
-          db.add('status_log', { bizType: 'employee', bizId: rec.id, from: 'active', to: 'resigning', at: U.now(), operator: 'liqianyu' });
+          db.add('status_log', { bizType: 'employee', bizId: rec.id, from: 'active', to: 'resigning', at: U.now(), operator: (HR.profile.get().name || '本地用户') });
           ui.toastOk('已办理离职，状态：离职交接中');
           m.close();
           loadRoster();
@@ -358,7 +358,7 @@
       danger: true,
       onOk: function () {
         return db.softDelete('employee', emp.id).then(function () {
-          db.add('status_log', { bizType: 'employee', bizId: emp.id, from: 'active', to: 'deleted', at: U.now(), operator: 'liqianyu' });
+          db.add('status_log', { bizType: 'employee', bizId: emp.id, from: 'active', to: 'deleted', at: U.now(), operator: (HR.profile.get().name || '本地用户') });
           ui.toastOk('档案已删除（软删除）');
           loadRoster();
         });
@@ -498,7 +498,7 @@
           rec.status = 'resigned';
           rec.resignInfo = Object.assign({}, rec.resignInfo || {}, { handoverDone: true, handoverDate: U.today() });
           return db.put('employee', rec).then(function () {
-            db.add('status_log', { bizType: 'employee', bizId: rec.id, from: 'resigning', to: 'resigned', at: U.now(), operator: 'liqianyu' });
+            db.add('status_log', { bizType: 'employee', bizId: rec.id, from: 'resigning', to: 'resigned', at: U.now(), operator: (HR.profile.get().name || '本地用户') });
             ui.toastOk('交接完成，已转入离职档案');
             loadResigned();
           });
@@ -516,7 +516,7 @@
         return db.get('employee', emp.id).then(function (rec) {
           rec.status = 'active';
           return db.put('employee', rec).then(function () {
-            db.add('status_log', { bizType: 'employee', bizId: rec.id, from: 'resigned', to: 'active', at: U.now(), operator: 'liqianyu' });
+            db.add('status_log', { bizType: 'employee', bizId: rec.id, from: 'resigned', to: 'active', at: U.now(), operator: (HR.profile.get().name || '本地用户') });
             ui.toastOk('已恢复在职');
             loadResigned();
           });

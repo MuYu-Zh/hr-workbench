@@ -44,6 +44,13 @@
       todayEl.textContent = U.toDateStr(now) + ' 星期' + week;
     }
 
+    // 顶部用户标识（读取个人资料，可修改）
+    var chipEl = document.getElementById('user-chip');
+    if (chipEl) {
+      var pname = HR.profile.get().name || '本地用户';
+      chipEl.textContent = '👤 ' + pname;
+    }
+
     // 打开数据库 → 种子 → 文件存储恢复 → 锁屏 → 路由
     HR.db.open()
       .then(HR.seed.seedIfEmpty)
