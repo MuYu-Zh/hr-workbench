@@ -9,7 +9,40 @@
 
   var U = HR.utils, ui = HR.ui, db = HR.db;
   var page = {};
-  var state = { collapsedAll: false };
+  var state = { collapsedIds: {}, allCollapsed: false };
+
+  function isCollapsed(node) {
+    return !!state.collapsedIds[node.id];
+  }
+
+  function toggleNode(id) {
+    if (state.collapsedIds[id]) {
+      delete state.collapsedIds[id];
+    } else {
+      state.collapsedIds[id] = true;
+    }
+    loadTree();
+  }
+
+  function toggleAll() {
+    if (state.allCollapsed) {
+      state.collapsedIds = {};
+      state.allCollapsed = false;
+    } else {
+      db.getAll('department').then(function (list) {
+        state.collapsedIds = {};
+        list.forEach(function (d) { state.collapsedIds[d.id] = true; });
+        state.allCollapsed = true;
+        var btn = document.getElementById('org-toggle-all');
+        if (btn) btn.textContent = '📂 展开全部';
+        loadTree();
+      });
+      return;
+    }
+    var btn = document.getElementById('org-toggle-all');
+    if (btn) btn.textContent = '📂 收起全部';
+    loadTree();
+  }
 
   /* ---------- 树构建 ---------- */
   function buildTree(list) {
@@ -58,11 +91,7 @@
 
     document.getElementById('org-add-root').onclick = function () { openForm(null, null); };
     document.getElementById('org-preview').onclick = previewChart;
-    document.getElementById('org-toggle-all').onclick = function () {
-      state.collapsedAll = !state.collapsedAll;
-      this.textContent = state.collapsedAll ? '📂 展开全部' : '📂 收起全部';
-      loadTree();
-    };
+    document.getElementById('org-toggle-all').onclick = toggleAll;
     document.getElementById('org-reload').onclick = loadTree;
     loadTree();
   };
@@ -88,9 +117,10 @@
     var row = document.createElement('div');
     row.className = 'org-node';
     var hasChildren = node._children.length > 0;
+    var collapsed = isCollapsed(node);
     row.innerHTML =
       '<div class="org-node-row" style="padding-left:' + (depth * 24 + 10) + 'px">' +
-      '<span class="org-toggle">' + (hasChildren ? '▾' : '') + '</span>' +
+      '<span class="org-toggle' + (hasChildren ? '' : ' empty') + '">' + (hasChildren ? (collapsed ? '▸' : '▾') : '') + '</span>' +
       '<span class="org-name">' + U.esc(node.name) + '</span>' +
       '<span class="org-status' + (node.status === 'disabled' ? ' disabled' : '') + '">' + (node.status === 'disabled' ? '停用' : '正常') + '</span>' +
       '<span class="org-sort">' + (node.sortOrder || 0) + '</span>' +
@@ -102,12 +132,18 @@
       '</span>' +
       '</div>';
 
+    if (hasChildren) {
+      row.querySelector('.org-toggle').onclick = function (e) {
+        e.stopPropagation();
+        toggleNode(node.id);
+      };
+    }
     row.querySelector('[data-act="add"]').onclick = function () { openForm(null, node.id); };
     row.querySelector('[data-act="edit"]').onclick = function () { openForm(node, null); };
     row.querySelector('[data-act="toggle"]').onclick = function () { toggleStatus(node.id); };
     row.querySelector('[data-act="del"]').onclick = function () { deleteDept(node); };
 
-    if (hasChildren && !state.collapsedAll) {
+    if (hasChildren && !collapsed) {
       var childWrap = document.createElement('div');
       childWrap.className = 'org-children';
       node._children.forEach(function (c) { childWrap.appendChild(renderNode(c, depth + 1)); });
@@ -266,6 +302,9 @@
       '<div class="chart-node-name">' + U.esc(node.name) + '</div>' +
       (node.status === 'disabled' ? '<div class="chart-node-status">停用</div>' : '');
     if (node._children.length) {
+      var connector = document.createElement('div');
+      connector.className = 'chart-connector';
+      box.appendChild(connector);
       var childrenWrap = document.createElement('div');
       childrenWrap.className = 'chart-children';
       node._children.forEach(function (c) { childrenWrap.appendChild(renderChartNode(c)); });
