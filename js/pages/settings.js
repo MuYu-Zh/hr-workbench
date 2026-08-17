@@ -21,6 +21,9 @@
       '  <div class="card"><div class="card-title"><span class="t-ico">💾</span>数据备份与恢复</div><div id="set-backup"></div></div>' +
       '  <div class="card"><div class="card-title"><span class="t-ico">📊</span>数据导出</div><div id="set-export"></div></div>' +
       '</div>' +
+      (window.desktop && window.desktop.isElectron ?
+        '<div class="card" style="margin-top:18px"><div class="card-title"><span class="t-ico">🖥</span>桌面版数据目录' +
+        '<span class="t-sub">桌面版数据保存在本机应用数据目录</span></div><div id="set-desktop-dir"></div></div>' : '') +
       '<div class="card" style="margin-top:18px"><div class="card-title"><span class="t-ico">🔄</span>检查更新' +
       '<span class="t-sub">对接 GitHub 仓库，自动检测并更新应用</span></div><div id="set-updater"></div></div>' +
       '<div class="card" style="margin-top:18px"><div class="card-title"><span class="t-ico">⚙️</span>基础参数配置</div><div id="set-params"></div></div>';
@@ -30,19 +33,45 @@
     renderFileStore();
     renderBackup();
     renderExport();
+    if (window.desktop && window.desktop.isElectron) renderDesktopDir();
     renderUpdater();
     renderParams();
   };
+
+  /* ---------- 桌面版数据目录 ---------- */
+  function renderDesktopDir() {
+    var box = document.getElementById('set-desktop-dir');
+    if (!box) return;
+    box.innerHTML = '<div class="set-row"><div class="set-main"><div class="set-name">应用数据目录</div>' +
+      '<div class="set-desc" id="desktop-dir-path">正在读取…</div></div>' +
+      '<button class="btn btn-sm btn-ghost" id="desktop-dir-open">📂 打开数据目录</button></div>';
+    if (window.desktop && window.desktop.getDataDir) {
+      window.desktop.getDataDir().then(function (dir) {
+        var el = document.getElementById('desktop-dir-path');
+        if (el) el.textContent = dir;
+      }).catch(function () { /* 忽略 */ });
+    }
+    var openBtn = document.getElementById('desktop-dir-open');
+    if (openBtn) {
+      openBtn.onclick = function () {
+        if (window.desktop && window.desktop.openDataDir) {
+          window.desktop.openDataDir().catch(function () { /* 忽略 */ });
+        }
+      };
+    }
+  }
 
   /* ---------- 检查更新模块 ---------- */
   function renderUpdater() {
     var box = document.getElementById('set-updater');
     var up = HR.updater;
     var cur = up.localVersion();
-    var isSecure = location.protocol === 'https:' || location.hostname === 'localhost' || location.hostname === '127.0.0.1';
+    var isElectron = !!(window.desktop && window.desktop.isElectron);
+    var isSecure = isElectron || location.protocol === 'https:' || location.hostname === 'localhost' || location.hostname === '127.0.0.1';
+    var hint = isSecure ? '更新源：' + U.esc(up.repo) + '（' + U.esc(up.branch) + ' 分支）' : 'file:// 环境无法更新，请通过 start.bat 启动或使用桌面安装版';
 
     var html = '<div class="set-row"><div class="set-main"><div class="set-name">当前版本：v' + U.esc(cur) + '</div>' +
-      '<div class="set-desc">' + (isSecure ? '更新源：' + U.esc(up.repo) + '（' + U.esc(up.branch) + ' 分支）' : 'file:// 环境无法更新，请通过 start.bat 启动后使用') + '</div></div>' +
+      '<div class="set-desc">' + hint + '</div></div>' +
       (isSecure ? '<button class="btn btn-sm btn-deep" id="upd-check">🔍 检查更新</button>' : '') + '</div>' +
       '<div id="upd-result"></div>';
 

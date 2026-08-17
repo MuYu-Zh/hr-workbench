@@ -1,0 +1,77 @@
+{
+  "name": "hr-workbench",
+  "productName": "人事工作台",
+  "version": "1.1.0",
+  "description": "个人人事管理：员工档案、待办备忘录、常用网址，数据本地存储",
+  "main": "electron/main.js",
+  "author": "MuYu-Zh",
+  "license": "MIT",
+  "scripts": {
+    "start": "electron .",
+    "pack:win": "electron-builder --win nsis portable",
+    "pack:mac": "electron-builder --mac dmg zip",
+    "pack:all": "electron-builder --win nsis portable --mac dmg zip",
+    "dist": "electron-builder"
+  },
+  "devDependencies": {
+    "electron": "^33.0.0",
+    "electron-builder": "^25.0.0"
+  },
+  "build": {
+    "appId": "com.muyuzh.hrworkbench",
+    "productName": "人事工作台",
+    "directories": {
+      "output": "dist",
+      "buildResources": "electron/build"
+    },
+    "files": [
+      "index.html",
+      "manifest.webmanifest",
+      "sw.js",
+      "version.json",
+      "css/**/*",
+      "js/**/*",
+      "icons/**/*",
+      "electron/**/*",
+      "!tools",
+      "!dist",
+      "!*.md"
+    ],
+    "asar": true,
+    "win": {
+      "target": [
+        { "target": "nsis", "arch": ["x64"] },
+        { "target": "portable", "arch": ["x64"] }
+      ],
+      "icon": "icons/icon-512.png"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "人事工作台",
+      "artifactName": "人事工作台-Setup-${version}.${ext}"
+    },
+    "portable": {
+      "artifactName": "人事工作台-便携版-${version}.${ext}"
+    },
+    "mac": {
+      "target": [
+        { "target": "dmg", "arch": ["x64", "arm64"] },
+        { "target": "zip", "arch": ["x64", "arm64"] }
+      ],
+      "icon": "icons/icon-512.png",
+      "category": "public.app-category.business"
+    },
+    "dmg": {
+      "artifactName": "人事工作台-${version}-${arch}.${ext}"
+    },
+    "electronLanguages": ["zh-CN", "en-US"],
+    "publish": {
+      "provider": "github",
+      "owner": "MuYu-Zh",
+      "repo": "hr-workbench"
+    }
+  }
+}

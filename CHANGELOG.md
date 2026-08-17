@@ -2,6 +2,12 @@
 
 本项目的版本变更记录。版本号遵循 [Semantic Versioning](https://semver.org/lang/zh-CN/)。
 
+## [1.1.0] - 2025-08-17
+
+### 新增
+- **桌面安装包**：Electron 壳 + electron-builder，支持 Windows（NSIS 安装包/便携版）与 macOS（DMG，Intel + Apple Silicon）
+- **CI 自动构建**：GitHub Actions workflow（`.github/workflows/build-desktop.yml`），推送 `v*` tag 自动构建并发布到 GitHub Release
+
 ## [1.0.0] - 2025-08-17
 
 ### 新增（一期功能）

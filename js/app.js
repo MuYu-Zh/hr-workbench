@@ -7,30 +7,35 @@
 
   var U = HR.utils;
 
+  /** 是否 Electron 桌面环境（preload 注入 window.desktop） */
+  function isElectron() {
+    return !!(global.desktop && global.desktop.isElectron);
+  }
+
   /** 是否 file:// 环境（无 PWA 能力提示） */
   function isFileProtocol() {
     return location.protocol === 'file:';
   }
 
-  /** 注册 Service Worker（仅 secure context） */
+  /** 注册 Service Worker（仅 secure context，Electron 桌面版无需 SW） */
   function registerSW() {
-    if ('serviceWorker' in navigator && !isFileProtocol()) {
+    if ('serviceWorker' in navigator && !isFileProtocol() && !isElectron()) {
       navigator.serviceWorker.register('sw.js').catch(function (e) {
         console.warn('Service Worker 注册失败:', e);
       });
     }
   }
 
-  /** 环境提示：file:// 下文件存储不可用 */
+  /** 环境提示：非 Electron 的 file:// 下文件存储/通知不可用 */
   function showEnvTip() {
-    if (!isFileProtocol()) return;
+    if (!isFileProtocol() || isElectron()) return;
     var tip = document.createElement('div');
     tip.style.cssText = 'position:fixed;bottom:16px;right:16px;z-index:400;background:#242a26;color:#fff;' +
       'padding:12px 16px;border-radius:10px;font-size:12.5px;max-width:320px;box-shadow:0 12px 32px -8px rgba(0,0,0,.4);' +
       'border-left:3px solid #d9a441;line-height:1.7;';
     tip.innerHTML = '💡 当前以文件方式直接打开（file://）。<br>' +
       '如需 <b>PWA 安装</b>、<b>系统通知</b>、<b>自定义数据存储文件夹</b>，' +
-      '请通过 <b>start.bat</b> 启动（localhost）后使用。' +
+      '请通过 <b>start.bat</b> 启动（localhost）或使用桌面安装版。' +
       '<span style="float:right;cursor:pointer;margin-left:10px" onclick="this.parentNode.remove()">✕</span>';
     document.body.appendChild(tip);
   }
@@ -87,8 +92,9 @@
         return HR.updater.initLocalVersion();
       })
       .then(function () {
-        // 启动后 5 秒静默检查更新（仅 secure context，且不打扰）
-        if (location.protocol !== 'file:' && (location.protocol === 'https:' || location.hostname === 'localhost' || location.hostname === '127.0.0.1')) {
+        // 启动后 5 秒静默检查更新（secure context 或 Electron 桌面版；不打扰）
+        var canCheck = isElectron() || (location.protocol !== 'file:' && (location.protocol === 'https:' || location.hostname === 'localhost' || location.hostname === '127.0.0.1'));
+        if (canCheck) {
           setTimeout(function () {
             HR.updater.check().then(function (info) {
               if (info.hasUpdate) {

@@ -37,6 +37,19 @@ python -m http.server 8765
 
 使用 Chrome/Edge 打开 `http://localhost:8765`，点击地址栏右侧 **安装图标**，即可安装为独立窗口应用，支持离线使用。
 
+### 桌面安装包（Windows / macOS）
+
+项目提供 Electron 桌面壳，可构建 Windows 与 macOS 原生安装包：
+
+- **Windows**：`人事工作台-Setup-1.0.0.exe`（NSIS 安装包）或 `人事工作台-便携版-1.0.0.exe`（免安装）
+- **macOS**：`人事工作台-1.0.0-arm64.dmg`（Apple Silicon）与 `-x64.dmg`（Intel），由 GitHub Actions 自动构建
+
+**获取方式**：
+1. GitHub Releases 页面下载（打 `v*` tag 自动触发构建）
+2. 或本地/CI 构建：`npm install && npm run pack:win`（Windows）/ `npm run pack:mac`（macOS）
+
+> 桌面版与 PWA 版数据互通：均存储在本地（桌面版数据目录可在系统设置中查看/打开）。桌面版同样支持文件存储模式。
+
 ## 📁 数据存储
 
 - **默认**：浏览器 IndexedDB（刷新/关闭不丢失）
@@ -63,6 +76,7 @@ python -m http.server 8765
 - File System Access API（文件存储模式）
 - Service Worker + Web App Manifest（PWA 离线）
 - Notification API（系统通知）
+- Electron + electron-builder（Windows/macOS 桌面安装包，GitHub Actions 自动构建）
 
 ## 📦 目录结构
 
@@ -73,6 +87,11 @@ hr-workbench/
 ├── sw.js                   # Service Worker（离线缓存）
 ├── start.bat               # 本地启动脚本
 ├── version.json            # 版本与更新清单
+├── package.json            # 桌面打包配置（Electron）
+├── electron/
+│   ├── main.js             # Electron 主进程
+│   └── preload.js          # 渲染进程安全桥
+├── .github/workflows/      # CI：构建 Win/macOS 安装包
 ├── css/style.css           # 样式
 ├── js/
 │   ├── app.js              # 启动入口

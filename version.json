@@ -1,12 +1,12 @@
 {
-  "version": "1.0.0",
+  "version": "1.1.0",
   "name": "人事工作台",
   "repo": "MuYu-Zh/hr-workbench",
   "branch": "main",
   "updatedAt": "2025-08-17",
   "notes": [
-    "一期功能正式发布：工作总览、员工档案管理、待办备忘录、常用网址、系统设置",
-    "PWA 可安装、文件存储模式、自动更新机制"
+    "新增桌面安装包：Windows（NSIS/便携版）与 macOS（DMG）",
+    "新增 CI 自动构建流程（GitHub Actions）"
   ],
   "files": [
     "index.html",
