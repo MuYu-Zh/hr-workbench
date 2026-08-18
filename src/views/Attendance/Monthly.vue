@@ -67,10 +67,10 @@ async function saveEdit() {
 function exportCsv() {
   const rows = list.value.map((r) => [
     r._emp.employeeNo, r._emp.name, deptMap.value[r._emp.departmentId] || '',
-    r.expectedDays || 0, r.actualDays || 0, r.lateCount || 0, r.earlyCount || 0,
-    r.absentDays || 0, r.leaveDays || 0, r.overtimeHours || 0, r.tripDays || 0, r.anomalyCount || 0
+    r.expectedDays || 0, r.actualDays || 0, r.lateCount || 0, r.earlyCount || 0, r.lateEarlyCount || 0,
+    r.absentDays || 0, r.leaveDays || 0, r.leaveHours || 0, r.overtimeHours || 0, r.tripDays || 0, r.anomalyCount || 0
   ])
-  const csv = '\uFEFF' + ['工号,姓名,部门,应出勤,实际出勤,迟到,早退,缺卡/旷工,请假天数,加班时长,出差天数,异常次数']
+  const csv = '\uFEFF' + ['工号,姓名,部门,应出勤,实际出勤,迟到,早退,迟到早退次数,缺卡/旷工,请假天数,请假时数,加班时长,出差天数,异常次数']
     .concat(rows.map((r) => r.map((v) => `"${String(v ?? '')}"`).join(','))).join('\n')
   const blob = new Blob([csv], { type: 'text/csv;charset=utf-8' })
   const a = document.createElement('a')
@@ -105,8 +105,10 @@ onMounted(load)
       <el-table-column prop="actualDays" label="实际出勤" width="80" />
       <el-table-column prop="lateCount" label="迟到" width="70" />
       <el-table-column prop="earlyCount" label="早退" width="70" />
+      <el-table-column prop="lateEarlyCount" label="迟到早退次数" width="110" />
       <el-table-column prop="absentDays" label="缺卡/旷工" width="90" />
       <el-table-column prop="leaveDays" label="请假天数" width="90" />
+      <el-table-column prop="leaveHours" label="请假时数" width="90" />
       <el-table-column prop="overtimeHours" label="加班时长" width="90" />
       <el-table-column prop="tripDays" label="出差天数" width="90" />
       <el-table-column prop="anomalyCount" label="异常" width="70" />
@@ -125,8 +127,10 @@ onMounted(load)
         <el-col :span="12"><el-form-item label="实际出勤"><el-input-number v-model="editForm.actualDays" :min="0" /></el-form-item></el-col>
         <el-col :span="12"><el-form-item label="迟到"><el-input-number v-model="editForm.lateCount" :min="0" /></el-form-item></el-col>
         <el-col :span="12"><el-form-item label="早退"><el-input-number v-model="editForm.earlyCount" :min="0" /></el-form-item></el-col>
+        <el-col :span="12"><el-form-item label="迟到早退次数"><el-input-number v-model="editForm.lateEarlyCount" :min="0" /></el-form-item></el-col>
         <el-col :span="12"><el-form-item label="缺卡/旷工"><el-input-number v-model="editForm.absentDays" :min="0" /></el-form-item></el-col>
         <el-col :span="12"><el-form-item label="请假天数"><el-input-number v-model="editForm.leaveDays" :min="0" /></el-form-item></el-col>
+        <el-col :span="12"><el-form-item label="请假时数"><el-input-number v-model="editForm.leaveHours" :min="0" /></el-form-item></el-col>
         <el-col :span="12"><el-form-item label="加班时长"><el-input-number v-model="editForm.overtimeHours" :min="0" /></el-form-item></el-col>
         <el-col :span="12"><el-form-item label="出差天数"><el-input-number v-model="editForm.tripDays" :min="0" /></el-form-item></el-col>
       </el-row>

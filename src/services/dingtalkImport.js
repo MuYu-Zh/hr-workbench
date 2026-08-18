@@ -50,10 +50,17 @@ function detectType(row) {
   return 'unknown'
 }
 
+function monthFromSheetName(name) {
+  const m = String(name || '').match(/(\d{4})\s*年\s*(\d{1,2})\s*月/)
+  if (!m) return ''
+  return `${m[1]}-${String(Number(m[2])).padStart(2, '0')}`
+}
+
 export async function importDingtalkAttendance(file) {
   const data = await file.arrayBuffer()
   const wb = XLSX.read(data, { type: 'array', cellDates: true })
   const ws = wb.Sheets[wb.SheetNames[0]]
+  const sheetMonth = monthFromSheetName(wb.SheetNames[0])
   const rows = XLSX.utils.sheet_to_json(ws, { defval: '', raw: true })
   if (!rows.length) return { type: 'unknown', rows: 0, added: 0, updated: 0, unmatched: [], failed: [] }
 
@@ -104,7 +111,7 @@ export async function importDingtalkAttendance(file) {
         if (existing) updated++; else added++
       } else if (type === 'monthly') {
         const monthKey = findHeader(row, ['月份', '统计月份'])
-        const month = monthKey ? String(row[monthKey] || '').trim().slice(0, 7) : ''
+        const month = monthKey ? String(row[monthKey] || '').trim().slice(0, 7) : sheetMonth
         if (!/^\d{4}-\d{2}$/.test(month)) { failed.push({ line: lineNo, reason: '缺少月份或格式不正确' }); continue }
         const monthlyId = `attendance_monthly_${emp.id}_${month}`
         const existing = await db.get('attendance_monthly', monthlyId)
@@ -112,6 +119,13 @@ export async function importDingtalkAttendance(file) {
           const key = findHeader(row, keys)
           const v = key ? Number(row[key]) : 0
           return isNaN(v) ? 0 : v
+        }
+        const leaveBreakdown = {
+          shiJia: num(['事假']),
+          bingJia: num(['病假']),
+          nianJia: num(['年假']),
+          tiaoXiu: num(['调休']),
+          other: num(['其他假别'])
         }
         const rec = Object.assign({}, existing || {}, {
           id: monthlyId,
@@ -121,9 +135,12 @@ export async function importDingtalkAttendance(file) {
           actualDays: num(['实际出勤', '出勤天数']),
           lateCount: num(['迟到']),
           earlyCount: num(['早退']),
-          absentDays: num(['缺卡', '旷工']),
-          leaveDays: num(['请假']),
-          overtimeHours: num(['加班']),
+          lateEarlyCount: num(['迟到早退次数']),
+          absentDays: num(['漏打卡次数', '缺卡', '旷工']),
+          leaveDays: num(['请假天数', '请假']),
+          leaveHours: num(['请假时数']),
+          leaveBreakdown,
+          overtimeHours: num(['本月加班累计', '加班']),
           tripDays: num(['出差']),
           source: 'dingtalk'
         })
