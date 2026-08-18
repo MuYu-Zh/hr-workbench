@@ -29,6 +29,7 @@
 | store | 用途 | 关键字段 |
 | --- | --- | --- |
 | `attendance_request` | 请假 / 加班 / 出差申请 | employeeId, type, leaveType, startTime, endTime, duration, reason, status |
+| `attendance_punch` | 钉钉打卡明细 | employeeId, workDate, month, onTime, offTime, source |
 | `attendance_remedy` | 补卡申请 | employeeId, remedyDate, timePoint, reason, status |
 | `attendance_anomaly` | 考勤异常 | employeeId, date, type, detail, handled, handleNote |
 | `shift` | 班次字典 | name, startTime, endTime, flexible, color |

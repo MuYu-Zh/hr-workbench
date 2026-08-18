@@ -1,7 +1,7 @@
 /* IndexedDB data access layer for Vue app */
 
 const DB_NAME = 'hr_workbench'
-const DB_VERSION = 3
+const DB_VERSION = 4
 
 export const STORES = {
   department: { keyPath: 'id', indexes: { parentId: {}, status: {} } },
@@ -17,7 +17,14 @@ export const STORES = {
   recruit_requirement: { keyPath: 'id', indexes: { reqNo: {}, departmentId: {}, status: {} } },
   candidate: { keyPath: 'id', indexes: { name: {}, phone: {}, status: {}, requirementId: {}, source: {} } },
   interview: { keyPath: 'id', indexes: { candidateId: {}, interviewDate: {} } },
-  offer: { keyPath: 'id', indexes: { candidateId: {}, status: {} } }
+  offer: { keyPath: 'id', indexes: { candidateId: {}, status: {} } },
+  attendance_request: { keyPath: 'id', indexes: { employeeId: {}, type: {}, status: {} } },
+  attendance_punch: { keyPath: 'id', indexes: { employeeId: {}, workDate: {}, month: {} } },
+  attendance_remedy: { keyPath: 'id', indexes: { employeeId: {}, remedyDate: {}, status: {} } },
+  attendance_anomaly: { keyPath: 'id', indexes: { employeeId: {}, date: {}, type: {}, handled: {} } },
+  shift: { keyPath: 'id', indexes: { name: {} } },
+  schedule: { keyPath: 'id', indexes: { employeeId: {}, workDate: {}, shiftId: {}, departmentId: {} } },
+  attendance_monthly: { keyPath: 'id', indexes: { employeeId: {}, month: {} } }
 }
 
 let dbPromise = null

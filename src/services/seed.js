@@ -57,7 +57,29 @@ const DICT_SEED = [
   { group: 'offer_status', value: 'issued', label: '已发放' },
   { group: 'offer_status', value: 'accepted', label: '已接受' },
   { group: 'offer_status', value: 'rejected', label: '已拒绝' },
-  { group: 'offer_status', value: 'expired', label: '已过期' }
+  { group: 'offer_status', value: 'expired', label: '已过期' },
+  { group: 'attendance_request_type', value: 'leave', label: '请假' },
+  { group: 'attendance_request_type', value: 'overtime', label: '加班' },
+  { group: 'attendance_request_type', value: 'business_trip', label: '出差' },
+  { group: 'leave_type', value: 'annual', label: '年假' },
+  { group: 'leave_type', value: 'sick', label: '病假' },
+  { group: 'leave_type', value: 'personal', label: '事假' },
+  { group: 'leave_type', value: 'marriage', label: '婚假' },
+  { group: 'leave_type', value: 'maternity', label: '产假' },
+  { group: 'leave_type', value: 'compensatory', label: '调休' },
+  { group: 'leave_type', value: 'other', label: '其他' },
+  { group: 'attendance_remedy_timepoint', value: 'on', label: '上班卡' },
+  { group: 'attendance_remedy_timepoint', value: 'off', label: '下班卡' },
+  { group: 'attendance_anomaly_type', value: 'late', label: '迟到' },
+  { group: 'attendance_anomaly_type', value: 'early_leave', label: '早退' },
+  { group: 'attendance_anomaly_type', value: 'missing_punch', label: '缺卡' },
+  { group: 'attendance_anomaly_type', value: 'absenteeism', label: '旷工' },
+  { group: 'attendance_anomaly_type', value: 'overtime_abnormal', label: '异常加班' },
+  { group: 'attendance_anomaly_type', value: 'duplicate', label: '重复打卡' },
+  { group: 'attendance_request_status', value: 'draft', label: '草稿' },
+  { group: 'attendance_request_status', value: 'pending', label: '待审批' },
+  { group: 'attendance_request_status', value: 'approved', label: '已通过' },
+  { group: 'attendance_request_status', value: 'rejected', label: '已驳回' }
 ]
 
 const LINK_SEED = [
