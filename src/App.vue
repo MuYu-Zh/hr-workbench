@@ -5,6 +5,8 @@ import { menu } from '@/router'
 import { db } from '@/services/db'
 import { seedIfEmpty } from '@/services/seed'
 import { useAppStore } from '@/stores/app'
+import { notifyChange } from '@/services/filestore'
+import { initLocalVersion } from '@/services/updater'
 
 const route = useRoute()
 const appStore = useAppStore()
@@ -22,6 +24,8 @@ onMounted(async () => {
   try {
     await db.open()
     await seedIfEmpty()
+    db.onChange(() => notifyChange())
+    await initLocalVersion()
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker.register('./sw.js').catch(() => {})
     }

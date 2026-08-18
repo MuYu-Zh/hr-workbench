@@ -4,6 +4,7 @@ import { ElMessage, ElMessageBox } from 'element-plus'
 import { db } from '@/services/db'
 
 const treeData = ref([])
+const previewVisible = ref(false)
 const dialogVisible = ref(false)
 const form = ref({ name: '', parentId: '', sortOrder: 0, status: 'normal' })
 const editingId = ref(null)
@@ -93,6 +94,7 @@ onMounted(load)
     </div>
     <div class="toolbar">
       <el-button type="primary" @click="openAdd(null)">＋ 新增顶级组织</el-button>
+      <el-button @click="previewVisible = true">🗂 预览组织结构图</el-button>
       <el-button @click="load">⟳ 刷新</el-button>
     </div>
     <el-tree :data="treeData" node-key="id" default-expand-all :expand-on-click-node="false">
@@ -134,6 +136,15 @@ onMounted(load)
         <el-button @click="dialogVisible = false">取消</el-button>
         <el-button type="primary" @click="save">保存</el-button>
       </template>
+    </el-dialog>
+
+    <el-dialog v-model="previewVisible" title="🏢 组织架构图" fullscreen>
+      <el-tree :data="treeData" node-key="id" default-expand-all :expand-on-click-node="false">
+        <template #default="{ data }">
+          <span>{{ data.name }}</span>
+          <el-tag v-if="data.status === 'disabled'" size="small" type="info" style="margin-left:8px">停用</el-tag>
+        </template>
+      </el-tree>
     </el-dialog>
   </div>
 </template>
