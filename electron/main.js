@@ -12,7 +12,7 @@ const fs = require('fs');
 
 // 是否打包后运行
 const isPacked = app.isPackaged;
-const APP_ROOT = isPacked ? path.join(process.resourcesPath, 'app') : __dirname;
+const APP_ROOT = isPacked ? path.join(process.resourcesPath, 'app') : path.join(__dirname, '..');
 const DIST_ROOT = path.join(APP_ROOT, 'dist');
 
 let mainWindow = null;

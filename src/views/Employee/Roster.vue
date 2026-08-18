@@ -12,6 +12,8 @@ const deptFilter = ref('')
 const dialogVisible = ref(false)
 const editing = ref(null)
 const form = ref({})
+const detailVisible = ref(false)
+const detailRow = ref(null)
 
 const headers = ['工号', '姓名', '性别', '民族', '出生日期', '身份证号', '手机', '邮箱', '部门', '入职日期', '转正日期', '用工形式', '学历', '毕业院校', '专业', '现住址']
 const fieldMap = {
@@ -78,6 +80,23 @@ async function remove(row) {
   await ElMessageBox.confirm(`确定删除 ${row.name} 的档案吗？`, '删除员工', { type: 'warning' })
   await db.softDelete('employee', row.id)
   ElMessage.success('已删除')
+  load()
+}
+
+function showDetail(row) {
+  detailRow.value = row
+  detailVisible.value = true
+}
+
+async function doResign(row) {
+  await ElMessageBox.confirm(`确认将 ${row.name}（${row.employeeNo}）办理离职吗？`, '办理离职', { type: 'warning' })
+  const rec = await db.get('employee', row.id)
+  await db.put('employee', Object.assign({}, rec, {
+    status: 'resigning',
+    resignDate: new Date().toISOString().slice(0, 10),
+    resignInfo: Object.assign({}, rec.resignInfo || {}, { date: new Date().toISOString().slice(0, 10), type: 'voluntary', reason: '', handoverDone: false, handoverDate: '' })
+  }))
+  ElMessage.success('已办理离职，状态：离职交接中')
   load()
 }
 
@@ -175,9 +194,11 @@ onMounted(load)
       <el-table-column prop="hireDate" label="入职日期" width="110" />
       <el-table-column prop="phone" label="手机" width="130" />
       <el-table-column prop="education" label="学历" width="90" />
-      <el-table-column label="操作" width="220" fixed="right">
+      <el-table-column label="操作" width="280" fixed="right">
         <template #default="{ row }">
+          <el-button link type="primary" @click="showDetail(row)">详情</el-button>
           <el-button link type="primary" @click="openEdit(row)">编辑</el-button>
+          <el-button link type="warning" @click="doResign(row)">离职</el-button>
           <el-button link type="danger" @click="remove(row)">删除</el-button>
         </template>
       </el-table-column>
@@ -208,5 +229,22 @@ onMounted(load)
       <el-button @click="dialogVisible = false">取消</el-button>
       <el-button type="primary" @click="save">保存</el-button>
     </template>
+  </el-dialog>
+
+  <el-dialog v-model="detailVisible" :title="detailRow ? `员工详情 · ${detailRow.name}` : ''" width="560px">
+    <el-descriptions v-if="detailRow" :column="2" border>
+      <el-descriptions-item label="工号">{{ detailRow.employeeNo }}</el-descriptions-item>
+      <el-descriptions-item label="姓名">{{ detailRow.name }}</el-descriptions-item>
+      <el-descriptions-item label="性别">{{ detailRow.gender === 'male' ? '男' : '女' }}</el-descriptions-item>
+      <el-descriptions-item label="部门">{{ deptMap[detailRow.departmentId] || '—' }}</el-descriptions-item>
+      <el-descriptions-item label="手机">{{ detailRow.phone }}</el-descriptions-item>
+      <el-descriptions-item label="邮箱">{{ detailRow.email || '—' }}</el-descriptions-item>
+      <el-descriptions-item label="入职日期">{{ detailRow.hireDate }}</el-descriptions-item>
+      <el-descriptions-item label="转正日期">{{ detailRow.regularDate || '试用中' }}</el-descriptions-item>
+      <el-descriptions-item label="学历">{{ detailRow.education || '—' }}</el-descriptions-item>
+      <el-descriptions-item label="毕业院校">{{ detailRow.school || '—' }}</el-descriptions-item>
+      <el-descriptions-item label="专业">{{ detailRow.major || '—' }}</el-descriptions-item>
+      <el-descriptions-item label="现住址" :span="2">{{ detailRow.address || '—' }}</el-descriptions-item>
+    </el-descriptions>
   </el-dialog>
 </template>

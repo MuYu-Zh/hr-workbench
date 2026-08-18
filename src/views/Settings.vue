@@ -4,6 +4,7 @@ import { ElMessage } from 'element-plus'
 import { useAppStore } from '@/stores/app'
 import { chooseFolder, exportToFolder } from '@/services/filestore'
 import { check, initLocalVersion } from '@/services/updater'
+import { db } from '@/services/db'
 
 const appStore = useAppStore()
 const profile = ref(Object.assign({}, appStore.profile))
@@ -39,6 +40,36 @@ async function checkUpdate() {
   if (info.hasUpdate) ElMessage.info(`发现新版本 ${info.latest}`)
   else ElMessage.success('当前已是最新版本')
 }
+
+async function exportBackup() {
+  const stores = db.listStores().filter((s) => s !== 'attachment' && s !== 'file_store')
+  const data = { app: 'hr_workbench', version: 1, exportedAt: new Date().toISOString(), stores: {} }
+  for (const store of stores) {
+    data.stores[store] = await db.getAll(store, { includeDeleted: true })
+  }
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' })
+  const a = document.createElement('a')
+  a.href = URL.createObjectURL(blob)
+  a.download = `hr-workbench-backup-${new Date().toISOString().slice(0, 10)}.json`
+  a.click()
+  URL.revokeObjectURL(a.href)
+  ElMessage.success('备份已导出')
+}
+
+async function importBackup(e) {
+  const file = e.target.files[0]
+  e.target.value = ''
+  if (!file) return
+  const text = await file.text()
+  const data = JSON.parse(text)
+  if (!data || !data.stores) { ElMessage.error('备份文件格式不正确'); return }
+  for (const store of Object.keys(data.stores)) {
+    if (store === 'attachment' || store === 'file_store') continue
+    await db.clear(store)
+    if (data.stores[store].length) await db.bulkAdd(store, data.stores[store])
+  }
+  ElMessage.success('备份已恢复')
+}
 </script>
 
 <template>
@@ -60,6 +91,15 @@ async function checkUpdate() {
     <div class="toolbar">
       <el-button @click="selectFolder">选择存储文件夹</el-button>
       <el-button type="primary" @click="exportNow">立即同步数据</el-button>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">🗂 数据备份 / 恢复</div>
+    <div class="toolbar">
+      <el-button @click="exportBackup">导出备份</el-button>
+      <el-button @click="$refs.backupFile.click()">恢复备份</el-button>
+      <input ref="backupFile" type="file" accept=".json" style="display:none" @change="importBackup" />
     </div>
   </div>
 
