@@ -1,21 +1,35 @@
 {
   "name": "hr-workbench",
   "productName": "人事工作台",
-  "version": "1.1.1",
-  "description": "个人人事管理：员工档案、待办备忘录、常用网址，数据本地存储",
+  "version": "1.2.0",
+  "description": "个人人事管理：员工档案、招聘、组织架构、待办备忘录、常用网址，数据本地存储",
   "main": "electron/main.js",
   "author": "MuYu-Zh",
   "license": "MIT",
   "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
     "start": "electron .",
-    "pack:win": "electron-builder --win nsis portable",
-    "pack:mac": "electron-builder --mac dmg zip",
-    "pack:all": "electron-builder --win nsis portable --mac dmg zip",
-    "dist": "electron-builder"
+    "pack:win": "npm run build && electron-builder --win nsis portable",
+    "pack:mac": "npm run build && electron-builder --mac dmg zip",
+    "pack:all": "npm run build && electron-builder --win nsis portable --mac dmg zip",
+    "dist": "npm run build && electron-builder"
+  },
+  "dependencies": {
+    "@element-plus/icons-vue": "^2.3.1",
+    "echarts": "^5.5.0",
+    "element-plus": "^2.7.0",
+    "pinia": "^2.1.7",
+    "vue": "^3.4.0",
+    "vue-router": "^4.3.0",
+    "xlsx": "^0.18.5"
   },
   "devDependencies": {
+    "@vitejs/plugin-vue": "^5.0.0",
     "electron": "^33.0.0",
-    "electron-builder": "^25.0.0"
+    "electron-builder": "^25.0.0",
+    "vite": "^5.2.0"
   },
   "build": {
     "appId": "com.muyuzh.hrworkbench",
@@ -25,16 +39,10 @@
       "buildResources": "electron/build"
     },
     "files": [
-      "index.html",
-      "manifest.webmanifest",
-      "sw.js",
-      "version.json",
-      "css/**/*",
-      "js/**/*",
-      "icons/**/*",
+      "dist/**/*",
       "electron/**/*",
+      "package.json",
       "!tools",
-      "!dist",
       "!*.md"
     ],
     "asar": true,
@@ -43,7 +51,7 @@
         { "target": "nsis", "arch": ["x64"] },
         { "target": "portable", "arch": ["x64"] }
       ],
-      "icon": "icons/icon-512.png"
+      "icon": "public/icons/icon-512.png"
     },
     "nsis": {
       "oneClick": false,
@@ -61,7 +69,7 @@
         { "target": "dmg", "arch": ["x64", "arm64"] },
         { "target": "zip", "arch": ["x64", "arm64"] }
       ],
-      "icon": "icons/icon-512.png",
+      "icon": "public/icons/icon-512.png",
       "category": "public.app-category.business"
     },
     "dmg": {

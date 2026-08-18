@@ -13,6 +13,7 @@ const fs = require('fs');
 // 是否打包后运行
 const isPacked = app.isPackaged;
 const APP_ROOT = isPacked ? path.join(process.resourcesPath, 'app') : __dirname;
+const DIST_ROOT = path.join(APP_ROOT, 'dist');
 
 let mainWindow = null;
 
@@ -24,7 +25,7 @@ function createWindow() {
     minHeight: 700,
     title: '人事工作台',
     backgroundColor: '#13201c',
-    icon: path.join(APP_ROOT, 'icons', 'icon-512.png'),
+    icon: path.join(DIST_ROOT, 'icons', 'icon-512.png'),
     autoHideMenuBar: true,
     webPreferences: {
       contextIsolation: true,
@@ -40,8 +41,8 @@ function createWindow() {
     return { action: 'deny' };
   });
 
-  // 加载本地 index.html
-  mainWindow.loadFile(path.join(APP_ROOT, 'index.html'));
+  // 加载 Vite 构建后的 index.html
+  mainWindow.loadFile(path.join(DIST_ROOT, 'index.html'));
 
   mainWindow.on('closed', () => { mainWindow = null; });
 }
