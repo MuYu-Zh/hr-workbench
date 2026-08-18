@@ -1,110 +1,248 @@
 # 🧑‍💼 人事工作台 (HR Workbench)
 
-> 个人人事管理单页应用 · 数据本地存储 · 可安装为 PWA
+> 个人人事管理应用 · 数据本地存储 · 可安装为 PWA · 支持 Windows/macOS 桌面版
 
-一款面向个人 HR 从业者的轻量工作台：员工档案、招聘、考勤、薪资、绩效、培训、合同、社保公积金、组织架构、员工异动、待办备忘、常用网址等模块一体化管理。**纯前端实现，零后端依赖，数据保存在浏览器本地**，支持文件存储模式（数据以真实文件落盘到用户指定文件夹）。
+一款面向个人 HR 从业者的轻量工作台，覆盖员工档案、招聘管理、组织架构、待办备忘、常用网址等日常事务。**纯前端实现，无后端依赖，数据保存在浏览器本地**；支持文件存储模式，数据可以真实文件形式落盘到用户指定文件夹。
+
+---
 
 ## ✨ 功能特性
 
-### 一期（已实现）
-| 模块 | 说明 |
-|---|---|
-| 📊 工作总览 | 在职/入职/离职统计卡、近 6 月趋势、生日·转正提醒、今日待办看板 |
-| 👥 员工档案管理 | 在职花名册、离职档案、基本信息维护、证件/附件归档（上传/预览/下载） |
-| ✅ 待办 & 备忘录 | 每日待办、备忘录笔记、重要事项提醒（系统通知） |
-| 🔗 常用网址 | 社保/公积金/个税/招聘/OA 快捷链接管理 |
-| ⚙️ 系统设置 | 个人信息、密码锁、数据备份/恢复、CSV 导出、基础参数、**文件存储模式**、**检查更新** |
+### 已实现模块
 
-### 二期（规划中）
-招聘管理 · 考勤管理 · 薪资管理 · 绩效考核 · 培训与发展 · 劳动合同 · 社保公积金 · 组织架构 · 员工异动
+| 模块 | 入口 | 说明 |
+| --- | --- | --- |
+| 📊 工作总览 | 首页 | 在职/离职统计、今日待办看板 |
+| 🏢 组织架构 | 组织架构 | 维护组织树、删除校验、组织结构图预览与全屏 |
+| 👥 员工档案管理 | 员工档案管理 | 在职花名册、离职档案、员工信息维护、证件/附件归档、xlsx 批量导入 |
+| 📣 招聘管理 | 招聘管理 | 招聘需求、候选人简历库、面试记录、offer 发放、渠道统计 |
+| ✅ 待办 & 备忘录 | 待办 & 备忘录 | 每日待办、备忘录笔记、重要事项提醒 |
+| 🔗 常用网址 | 常用网址 | 社保/公积金/个税/招聘/OA 等快捷链接管理 |
+| ⚙️ 系统设置 | 系统设置 | 个人信息、数据备份/恢复、文件存储模式、检查更新 |
+
+### 平台能力
+
+- **PWA**：可安装为独立应用，支持离线使用
+- **文件存储模式**：数据以 `hr-data.json` / `hr-config.json` / `attachments/` 落盘
+- **自动更新**：基于 GitHub 仓库版本号检测并更新应用文件，不影响业务数据
+- **桌面端**：Electron 壳，支持 Windows NSIS/便携版与 macOS DMG
+
+---
 
 ## 🚀 快速开始
 
-### 方式一：本地启动（推荐，功能完整）
+### 方式一：直接使用 PWA（推荐）
+
+1. 使用 **Chrome / Edge** 打开已部署地址（`https://` 或 `localhost`）
+2. 点击浏览器地址栏右侧的 **安装图标**
+3. 安装后可从桌面/开始菜单/程序坞启动，像原生应用一样使用
+4. 支持离线打开，数据仍保存在本机
+
+### 方式二：本地运行（开发 / 体验）
+
+需要 Node.js 18+：
 
 ```bash
-# Windows：双击 start.bat
-# 或手动启动：
-python -m http.server 8765
-# 打开浏览器访问 http://localhost:8765
+npm install
+npm run dev
 ```
 
-### 方式二：直接打开
+然后打开 Vite 输出的本地地址（默认 `http://localhost:8000`）。
 
-双击 `index.html`（file:// 模式），基础功能可用，但 PWA 安装、系统通知、文件存储模式不可用（需 localhost 或 https）。
+### 方式三：本地构建并预览
 
-### 安装为应用（PWA）
+```bash
+npm run build
+npm run preview
+```
 
-使用 Chrome/Edge 打开 `http://localhost:8765`，点击地址栏右侧 **安装图标**，即可安装为独立窗口应用，支持离线使用。
+### 方式四：桌面安装包
 
-### 桌面安装包（Windows / macOS）
+- **Windows**：NSIS 安装包 / 免安装便携版
+- **macOS**：Intel / Apple Silicon DMG
 
-项目提供 Electron 桌面壳，可构建 Windows 与 macOS 原生安装包：
+获取方式：
 
-- **Windows**：`人事工作台-Setup-1.0.0.exe`（NSIS 安装包）或 `人事工作台-便携版-1.0.0.exe`（免安装）
-- **macOS**：`人事工作台-1.0.0-arm64.dmg`（Apple Silicon）与 `-x64.dmg`（Intel），由 GitHub Actions 自动构建
+1. GitHub Releases 下载（推送 `v*` tag 自动触发构建）
+2. 本地构建：
 
-**获取方式**：
-1. GitHub Releases 页面下载（打 `v*` tag 自动触发构建）
-2. 或本地/CI 构建：`npm install && npm run pack:win`（Windows）/ `npm run pack:mac`（macOS）
+```bash
+npm run pack:win   # Windows
+npm run pack:mac   # macOS
+```
 
-> 桌面版与 PWA 版数据互通：均存储在本地（桌面版数据目录可在系统设置中查看/打开）。桌面版同样支持文件存储模式。
+> 桌面版与 PWA 版数据均存储在本地；桌面版数据目录可在“系统设置 → 文件存储模式”中查看/打开。
 
-## 📁 数据存储
+---
 
-- **默认**：浏览器 IndexedDB（刷新/关闭不丢失）
-- **文件存储模式**（推荐）：系统设置 → 数据存储位置 → 选择文件夹，数据以真实文件落盘：
-  ```
-  你选择的文件夹/
-  ├── hr-data.json      # 全部业务数据
-  ├── hr-config.json    # 系统参数与个人信息
-  └── attachments/      # 证件、附件等二进制文件
-  ```
-  支持自动同步、从文件夹恢复、数据拷贝与迁移。
+## 📲 PWA 安装与使用指南
+
+### 安装为应用
+
+- 浏览器要求：**Chrome / Edge**（桌面端）
+- 环境要求：`https://` 或 `localhost`（PWA 需要 secure context）
+- 安装入口：地址栏右侧安装图标，或浏览器菜单 → “安装 人事工作台”
+
+### 离线使用
+
+- 安装后应用资源会被 Service Worker 缓存
+- 断网时仍可打开应用和已加载页面
+- 业务数据保存在本机 IndexedDB / 文件存储文件夹，不依赖网络
+
+### 缓存与更新
+
+- 应用使用版本化缓存：`version.json` 版本变化时，Service Worker 会重建缓存
+- 如果页面长期未更新，请先强制刷新：`Ctrl+Shift+R`
+- 仍异常时：DevTools → Application → Service Workers → Unregister，再刷新
+
+---
+
+## 💾 数据存储与备份迁移
+
+### 默认存储：IndexedDB
+
+- 数据保存在浏览器本地，刷新/关闭不丢失
+- 适合单浏览器、单设备日常使用
+
+### 文件存储模式（推荐）
+
+在 **系统设置 → 文件存储模式** 中选择一个文件夹，数据会以真实文件落盘：
+
+```text
+你选择的文件夹/
+├── hr-data.json       # 全部业务数据
+├── hr-config.json     # 系统参数与个人信息
+└── attachments/       # 证件、附件等二进制文件
+```
+
+- 支持自动同步
+- 支持启动时恢复文件夹授权
+- 便于拷贝、备份和迁移
+
+### 备份与恢复
+
+在 **系统设置 → 数据备份 / 恢复** 中：
+
+- **导出备份**：将所有非附件业务数据导出为 JSON 文件
+- **恢复备份**：选择之前导出的 JSON 文件，覆盖当前数据
+
+> 附件二进制未包含在 JSON 备份中；如需完整迁移，请使用文件存储模式复制整个文件夹。
+
+### 换浏览器 / 换电脑迁移
+
+1. 在旧环境开启文件存储模式，选择目标文件夹并等待同步
+2. 将整个文件夹拷贝到新环境
+3. 在新环境打开应用，进入“系统设置 → 文件存储模式”选择同一文件夹，或通过备份 JSON 恢复业务数据
+
+---
 
 ## 🔄 更新机制
 
-系统设置 → 检查更新（或启动时静默检查），自动对比 GitHub 仓库 `version.json`：
+- 应用会读取 GitHub 仓库 `version.json` 与本地版本对比
+- 发现新版本时提示更新说明
+- 确认后自动下载新应用文件并写入缓存，刷新后生效
+- 更新只替换应用代码，**不影响本地业务数据**
 
-- 检测到新版本 → 弹窗展示更新说明 → 确认后自动下载新文件并刷新
-- 更新仅替换应用文件，**不影响本地数据**
+---
+
+## ❓ 常见问题 / 故障排查
+
+### 页面只显示标题/侧边栏，内容空白
+
+- 可能是旧 Service Worker 缓存了旧版资源
+- 解决：`Ctrl+Shift+R` 强制刷新；仍不行则 DevTools → Application → Service Workers → Unregister 后刷新
+
+### 无法安装 PWA
+
+- 确认使用 Chrome/Edge
+- 确认访问地址是 `https://` 或 `localhost`
+- `file://` 方式打开不支持安装
+
+### 文件存储模式不可用 / 无法选择文件夹
+
+- 需要 Chrome/Edge 且 secure context（`https://` 或 `localhost`）
+- 如浏览器弹窗被拒绝，请在地址栏权限设置中允许
+
+### 系统通知不生效
+
+- 需要在浏览器地址栏/站点设置中允许通知权限
+- 部分浏览器对通知权限要求用户主动交互后才能触发
+
+### 数据丢失 / 恢复
+
+- 默认 IndexedDB 数据与浏览器绑定，清除浏览器数据会删除
+- 重要数据建议开启文件存储模式，并定期导出 JSON 备份
+
+---
 
 ## 🛠 技术栈
 
-- 原生 HTML / CSS / JavaScript（零构建、零第三方运行时依赖）
-- IndexedDB + localStorage（数据持久化）
-- File System Access API（文件存储模式）
-- Service Worker + Web App Manifest（PWA 离线）
-- Notification API（系统通知）
-- Electron + electron-builder（Windows/macOS 桌面安装包，GitHub Actions 自动构建）
+- **前端框架**：Vue 3 + Vite
+- **路由 / 状态**：Vue Router + Pinia
+- **UI 组件库**：Element Plus
+- **图表**：ECharts
+- **Excel**：SheetJS
+- **数据存储**：IndexedDB + localStorage
+- **文件存储**：File System Access API
+- **PWA**：Service Worker + Web App Manifest
+- **桌面端**：Electron + electron-builder
 
-## 📦 目录结构
+---
 
+## 🧑‍💻 开发与构建
+
+### 常用命令
+
+```bash
+npm install        # 安装依赖
+npm run dev        # 启动开发服务器
+npm run build      # 生产构建，输出到 dist/
+npm run preview    # 预览构建产物
+npm run pack:win   # 构建 Windows 安装包
+npm run pack:mac   # 构建 macOS 安装包
 ```
+
+### 发布流程
+
+1. 更新 `version.json`、`package.json` 版本号，以及 `public/sw.js` 中的 `SW_REV`
+2. 提交并推送代码
+3. 推送 `v*` tag（如 `v1.2.0`），GitHub Actions 自动构建 Windows/macOS 安装包并发布到 Releases
+
+---
+
+## 📁 目录结构
+
+```text
 hr-workbench/
-├── index.html              # 应用入口
-├── manifest.webmanifest    # PWA 清单
-├── sw.js                   # Service Worker（离线缓存）
-├── start.bat               # 本地启动脚本
-├── version.json            # 版本与更新清单
-├── package.json            # 桌面打包配置（Electron）
+├── index.html               # Vite 入口
+├── package.json             # 依赖、脚本、Electron 打包配置
+├── vite.config.js           # Vite 配置
+├── src/
+│   ├── main.js              # Vue 应用入口
+│   ├── App.vue              # 应用壳（侧边栏/顶栏/内容区）
+│   ├── router/              # 路由与菜单
+│   ├── stores/              # Pinia 状态
+│   ├── services/            # IndexedDB、文件存储、更新、桌面封装
+│   ├── views/               # 各功能页面
+│   │   ├── Dashboard.vue
+│   │   ├── Org.vue
+│   │   ├── Employee/
+│   │   ├── Recruit/
+│   │   └── Todo/
+│   └── styles/              # 全局样式
+├── public/
+│   ├── sw.js                # Service Worker
+│   ├── version.json         # 版本与更新信息
+│   ├── manifest.webmanifest # PWA 清单
+│   └── icons/               # PWA/桌面图标
 ├── electron/
-│   ├── main.js             # Electron 主进程
-│   └── preload.js          # 渲染进程安全桥
-├── .github/workflows/      # CI：构建 Win/macOS 安装包
-├── css/style.css           # 样式
-├── js/
-│   ├── app.js              # 启动入口
-│   ├── db.js               # IndexedDB 数据访问层
-│   ├── filestore.js        # 文件存储引擎
-│   ├── updater.js          # 更新检测与执行
-│   ├── ui.js               # 通用 UI 组件
-│   ├── router.js           # 路由与菜单
-│   ├── seed.js             # 种子数据
-│   ├── utils.js            # 工具函数
-│   └── pages/              # 各功能页面
-└── icons/                  # PWA 图标
+│   ├── main.js              # Electron 主进程
+│   └── preload.js           # 安全桥
+├── dist/                    # 构建产物（生成）
+└── .github/workflows/       # CI 构建配置
 ```
+
+---
 
 ## 🤝 参与贡献
 
