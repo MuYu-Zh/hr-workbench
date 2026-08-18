@@ -30,7 +30,7 @@ jobs:
       - name: 构建 Windows 安装包
         shell: pwsh
         env:
-          CSC_IDENTITY_AUTO_DISCOVERY: 'false'
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}
         run: |
           npm run pack:win *> build-win.log
           $code = $LASTEXITCODE
