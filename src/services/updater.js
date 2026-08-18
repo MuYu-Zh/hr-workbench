@@ -37,7 +37,28 @@ export async function check() {
   if (!r.ok) throw new Error(`无法获取远程版本信息（HTTP ${r.status}）`)
   const remote = await r.json()
   const hasUpdate = compareVersions(remote.version, cur) > 0
-  return { hasUpdate, current: cur, latest: remote.version, notes: remote.notes || [] }
+  return { hasUpdate, current: cur, latest: remote.version, notes: remote.notes || [], files: remote.files || [] }
 }
 
-export default { localVersion, initLocalVersion, check }
+export async function apply(info) {
+  if (!info || !info.files || !info.files.length) {
+    throw new Error('更新清单为空')
+  }
+  if (!('caches' in window)) {
+    localStorage.setItem(VERSION_KEY, info.latest)
+    return { mode: 'version-only' }
+  }
+  const cacheName = CACHE_PREFIX + info.latest
+  const cache = await caches.open(cacheName)
+  for (const f of info.files) {
+    const resp = await fetch(`${rawBase}/${f}`, { cache: 'no-store' })
+    if (!resp.ok) throw new Error(`下载 ${f} 失败（HTTP ${resp.status}）`)
+    await cache.put(new Request(`./${f}`, { mode: 'no-cors' }), resp)
+  }
+  const keys = await caches.keys()
+  await Promise.all(keys.filter((k) => k.indexOf(CACHE_PREFIX) === 0 && k !== cacheName).map((k) => caches.delete(k)))
+  localStorage.setItem(VERSION_KEY, info.latest)
+  return { mode: 'cache', version: info.latest }
+}
+
+export default { localVersion, initLocalVersion, check, apply }

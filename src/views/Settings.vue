@@ -1,9 +1,9 @@
 <script setup>
 import { ref } from 'vue'
-import { ElMessage } from 'element-plus'
+import { ElMessage, ElMessageBox } from 'element-plus'
 import { useAppStore } from '@/stores/app'
 import { chooseFolder, exportToFolder } from '@/services/filestore'
-import { check, initLocalVersion } from '@/services/updater'
+import { check, initLocalVersion, apply } from '@/services/updater'
 import { db } from '@/services/db'
 
 const appStore = useAppStore()
@@ -37,8 +37,17 @@ async function checkUpdate() {
   await initLocalVersion()
   const info = await check()
   updateInfo.value = info
-  if (info.hasUpdate) ElMessage.info(`发现新版本 ${info.latest}`)
-  else ElMessage.success('当前已是最新版本')
+  if (info.hasUpdate) {
+    try {
+      await ElMessageBox.confirm(`发现新版本 ${info.latest}，是否立即更新？`, '检查更新', { type: 'info' })
+      await apply(info)
+      ElMessage.success('更新完成，请刷新页面')
+    } catch (e) {
+      if (e !== 'cancel') ElMessage.error(e.message || '更新失败')
+    }
+  } else {
+    ElMessage.success('当前已是最新版本')
+  }
 }
 
 async function exportBackup() {
