@@ -1,6 +1,6 @@
 # 🧑‍💼 人事工作台 (HR Workbench)
 
-> 个人人事管理应用 · 数据本地存储 · 可安装为 PWA · 支持 Windows/macOS 桌面版
+> 个人人事管理应用 · 数据本地存储 · 可安装为 PWA
 
 一款面向个人 HR 从业者的轻量工作台，覆盖员工档案、招聘管理、组织架构、待办备忘、常用网址等日常事务。**纯前端实现，无后端依赖，数据保存在浏览器本地**；支持文件存储模式，数据可以真实文件形式落盘到用户指定文件夹。
 
@@ -37,7 +37,6 @@
 - **PWA**：可安装为独立应用，支持离线使用
 - **文件存储模式**：数据以 `hr-data.json` / `hr-config.json` / `attachments/` 落盘
 - **自动更新**：基于 GitHub 仓库版本号检测并更新应用文件，不影响业务数据
-- **桌面端**：Electron 壳，支持 Windows NSIS/便携版与 macOS DMG
 
 ---
 
@@ -67,23 +66,6 @@ npm run dev
 npm run build
 npm run preview
 ```
-
-### 方式四：桌面安装包
-
-- **Windows**：NSIS 安装包 / 免安装便携版
-- **macOS**：Intel / Apple Silicon DMG
-
-获取方式：
-
-1. GitHub Releases 下载（推送 `v*` tag 自动触发构建）
-2. 本地构建：
-
-```bash
-npm run pack:win   # Windows
-npm run pack:mac   # macOS
-```
-
-> 桌面版与 PWA 版数据均存储在本地；桌面版数据目录可在“系统设置 → 文件存储模式”中查看/打开。
 
 ---
 
@@ -197,7 +179,6 @@ npm run pack:mac   # macOS
 - **数据存储**：IndexedDB + localStorage
 - **文件存储**：File System Access API
 - **PWA**：Service Worker + Web App Manifest
-- **桌面端**：Electron + electron-builder
 
 ---
 
@@ -210,15 +191,13 @@ npm install        # 安装依赖
 npm run dev        # 启动开发服务器
 npm run build      # 生产构建，输出到 dist/
 npm run preview    # 预览构建产物
-npm run pack:win   # 构建 Windows 安装包
-npm run pack:mac   # 构建 macOS 安装包
 ```
 
 ### 发布流程
 
 1. 更新 `version.json`、`package.json` 版本号，以及 `public/sw.js` 中的 `SW_REV`
-2. 提交并推送代码
-3. 推送 `v*` tag（如 `v1.2.0`），GitHub Actions 自动构建 Windows/macOS 安装包并发布到 Releases
+2. 提交并推送到 `main`
+3. GitHub Actions 自动构建 `dist/` 并部署到 GitHub Pages
 
 ---
 
@@ -227,31 +206,29 @@ npm run pack:mac   # 构建 macOS 安装包
 ```text
 hr-workbench/
 ├── index.html               # Vite 入口
-├── package.json             # 依赖、脚本、Electron 打包配置
+├── package.json             # 依赖与脚本
 ├── vite.config.js           # Vite 配置
 ├── src/
 │   ├── main.js              # Vue 应用入口
 │   ├── App.vue              # 应用壳（侧边栏/顶栏/内容区）
 │   ├── router/              # 路由与菜单
 │   ├── stores/              # Pinia 状态
-│   ├── services/            # IndexedDB、文件存储、更新、桌面封装
+│   ├── services/            # IndexedDB、文件存储、更新等
 │   ├── views/               # 各功能页面
 │   │   ├── Dashboard.vue
 │   │   ├── Org.vue
 │   │   ├── Employee/
 │   │   ├── Recruit/
+│   │   ├── Attendance/
 │   │   └── Todo/
 │   └── styles/              # 全局样式
 ├── public/
 │   ├── sw.js                # Service Worker
 │   ├── version.json         # 版本与更新信息
 │   ├── manifest.webmanifest # PWA 清单
-│   └── icons/               # PWA/桌面图标
-├── electron/
-│   ├── main.js              # Electron 主进程
-│   └── preload.js           # 安全桥
+│   └── icons/               # PWA 图标
 ├── dist/                    # 构建产物（生成）
-└── .github/workflows/       # CI 构建配置
+└── .github/workflows/       # GitHub Pages 部署
 ```
 
 ---
