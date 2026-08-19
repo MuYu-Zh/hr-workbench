@@ -44,10 +44,12 @@
 
 ### 方式一：直接使用 PWA（推荐）
 
-1. 使用 **Chrome / Edge** 打开已部署地址（`https://` 或 `localhost`）
+1. 使用 **Chrome / Edge** 打开在线地址：**https://muyu-zh.github.io/hr-workbench/**
 2. 点击浏览器地址栏右侧的 **安装图标**
 3. 安装后可从桌面/开始菜单/程序坞启动，像原生应用一样使用
 4. 支持离线打开，数据仍保存在本机
+
+> 如果访问提示 404 或源码页面，请在 GitHub 仓库 **Settings → Pages → Source** 选择 **GitHub Actions**，并等待部署完成。
 
 ### 方式二：本地运行（开发 / 体验）
 
