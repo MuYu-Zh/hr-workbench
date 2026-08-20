@@ -7,7 +7,7 @@
   "license": "MIT",
   "scripts": {
     "dev": "vite",
-    "build": "vite build",
+    "build": "vite build && node scripts/generate-sw-assets.mjs",
     "preview": "vite preview"
   },
   "dependencies": {

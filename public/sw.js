@@ -27,22 +27,41 @@ const STATIC_ASSETS = [
   './icons/icon-maskable-512.png'
 ];
 
+function precacheStatic() {
+  return caches.open(CACHE_NAME).then(function (cache) {
+    return cache.addAll(STATIC_ASSETS);
+  });
+}
+
+function precacheManifest() {
+  return fetch('./sw-assets.json', { cache: 'no-store' })
+    .then(function (r) { return r.ok ? r.json() : null; })
+    .then(function (list) {
+      if (!Array.isArray(list) || !list.length) return;
+      return caches.open(CACHE_NAME).then(function (cache) {
+        return cache.addAll(list);
+      });
+    })
+    .catch(function () {
+      // 开发模式或旧版本没有 sw-assets.json 时忽略，仅缓存基础壳
+    });
+}
+
 self.addEventListener('install', function (e) {
   e.waitUntil(
     fetch('./version.json', { cache: 'no-store' })
       .then(function (r) { return r.ok ? r.json() : null; })
       .then(function (v) {
         if (v && v.version) CACHE_NAME = CACHE_PREFIX + v.version;
-        return caches.open(CACHE_NAME).then(function (cache) {
-          return cache.addAll(STATIC_ASSETS);
-        });
+        return precacheStatic();
       })
+      .then(function () { return precacheManifest(); })
       .then(function () { return self.skipWaiting(); })
       .catch(function () {
         // 读取版本失败：仍尝试用默认名缓存
-        return caches.open(CACHE_NAME).then(function (cache) {
-          return cache.addAll(STATIC_ASSETS);
-        }).then(function () { return self.skipWaiting(); });
+        return precacheStatic()
+          .then(function () { return precacheManifest(); })
+          .then(function () { return self.skipWaiting(); });
       })
   );
 });

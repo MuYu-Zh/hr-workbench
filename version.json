@@ -15,6 +15,7 @@
     "index.html",
     "manifest.webmanifest",
     "sw.js",
+    "sw-assets.json",
     "version.json"
   ]
 }
