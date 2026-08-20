@@ -1,7 +1,15 @@
 /* IndexedDB data access layer for Vue app */
 
-const DB_NAME = 'hr_workbench'
+const DB_BASE_NAME = 'hr_workbench'
 const DB_VERSION = 4
+const CURRENT_ENTERPRISE_KEY = 'hr.currentEnterpriseId'
+
+let currentEnterpriseId = 'default'
+try {
+  currentEnterpriseId = localStorage.getItem(CURRENT_ENTERPRISE_KEY) || 'default'
+} catch (e) {
+  currentEnterpriseId = 'default'
+}
 
 export const STORES = {
   department: { keyPath: 'id', indexes: { parentId: {}, status: {} } },
@@ -40,10 +48,37 @@ function uuid() {
 
 function now() { return Date.now() }
 
+function dbNameFor(enterpriseId) {
+  return enterpriseId === 'default' ? DB_BASE_NAME : `${DB_BASE_NAME}_${enterpriseId}`
+}
+
+function getCurrentEnterpriseId() {
+  return currentEnterpriseId
+}
+
+function setCurrentEnterpriseId(id) {
+  currentEnterpriseId = id || 'default'
+  try {
+    localStorage.setItem(CURRENT_ENTERPRISE_KEY, currentEnterpriseId)
+  } catch (e) {
+    // ignore storage errors
+  }
+}
+
+function closeCurrentDb() {
+  if (dbPromise) {
+    const p = dbPromise
+    dbPromise = null
+    p.then((db) => {
+      try { db.close() } catch (e) { /* ignore */ }
+    }).catch(() => { /* ignore */ })
+  }
+}
+
 function open() {
   if (dbPromise) return dbPromise
   dbPromise = new Promise((resolve, reject) => {
-    const req = indexedDB.open(DB_NAME, DB_VERSION)
+    const req = indexedDB.open(dbNameFor(currentEnterpriseId), DB_VERSION)
     req.onupgradeneeded = (e) => {
       const db = e.target.result
       const tx = e.target.transaction
@@ -97,9 +132,32 @@ function open() {
       }
       resolve(db)
     }
-    req.onerror = () => reject(req.error)
+    req.onerror = () => {
+      dbPromise = null
+      reject(req.error)
+    }
+    req.onblocked = () => {
+      dbPromise = null
+      reject(new Error('数据库被其他标签页占用，请关闭旧页面后重试'))
+    }
   })
   return dbPromise
+}
+
+async function switchEnterprise(id) {
+  const oldId = currentEnterpriseId
+  if (oldId === id) return open()
+  closeCurrentDb()
+  currentEnterpriseId = id
+  try {
+    await open()
+    setCurrentEnterpriseId(id)
+    return true
+  } catch (e) {
+    currentEnterpriseId = oldId
+    closeCurrentDb()
+    throw e
+  }
 }
 
 function withStore(store, mode, fn) {
@@ -136,7 +194,10 @@ function fireChange() {
 }
 
 export const db = {
+  get currentEnterpriseId() { return currentEnterpriseId },
   open,
+  switchEnterprise,
+  close: closeCurrentDb,
   listStores: () => Object.keys(STORES),
   onChange: (fn) => { changeHandler = fn },
   add(store, data) {

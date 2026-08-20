@@ -1,5 +1,11 @@
 import { defineStore } from 'pinia'
 import { ls } from '@/services/seed'
+import { getCurrentEnterpriseId } from '@/services/enterprise'
+
+function settingsStorageKey() {
+  const id = getCurrentEnterpriseId()
+  return id === 'default' ? 'hr.settings' : `hr.settings.${id}`
+}
 
 const DEFAULT_SETTINGS = {
   remindDays: { contract: [60, 30], cert: 30, birthday: 7, probation: 15 },
@@ -19,14 +25,14 @@ const DEFAULT_SETTINGS = {
 
 export const useAppStore = defineStore('app', {
   state: () => ({
-    settings: Object.assign({}, DEFAULT_SETTINGS, ls.get('hr.settings', {})),
+    settings: Object.assign({}, DEFAULT_SETTINGS, ls.get(settingsStorageKey(), {})),
     profile: ls.get('hr.profile', { name: '', title: 'HR 管理', phone: '', email: '', passwordHash: '' }),
     uiState: ls.get('hr.ui.state', { openGroups: {}, active: '/dashboard' })
   }),
   actions: {
     saveSettings(patch) {
       this.settings = Object.assign({}, this.settings, patch)
-      ls.set('hr.settings', this.settings)
+      ls.set(settingsStorageKey(), this.settings)
     },
     saveProfile(patch) {
       this.profile = Object.assign({}, this.profile, patch)

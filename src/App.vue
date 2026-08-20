@@ -1,15 +1,32 @@
 <script setup>
-import { onMounted, computed } from 'vue'
+import { onMounted, computed, ref } from 'vue'
 import { useRoute } from 'vue-router'
+import { ElMessage, ElMessageBox } from 'element-plus'
 import { menu } from '@/router'
 import { db } from '@/services/db'
 import { seedIfEmpty } from '@/services/seed'
 import { useAppStore } from '@/stores/app'
 import { notifyChange, restore } from '@/services/filestore'
 import { initLocalVersion } from '@/services/updater'
+import {
+  ensureDefaultEnterprise,
+  getEnterprises,
+  getCurrentEnterprise,
+  switchEnterprise
+} from '@/services/enterprise'
+import EnterpriseManager from '@/components/EnterpriseManager.vue'
 
 const route = useRoute()
 const appStore = useAppStore()
+
+const managerVisible = ref(false)
+const enterpriseList = ref([])
+const currentEnterprise = ref({ id: 'default', name: '默认企业' })
+
+function refreshEnterprises() {
+  enterpriseList.value = getEnterprises()
+  currentEnterprise.value = getCurrentEnterprise()
+}
 
 const todayText = computed(() => {
   const now = new Date()
@@ -20,8 +37,30 @@ const todayText = computed(() => {
 
 const userText = computed(() => '👤 ' + (appStore.profile.name || '本地用户'))
 
+async function handleEnterpriseCommand(command) {
+  if (command === 'manage') {
+    managerVisible.value = true
+    return
+  }
+  const target = enterpriseList.value.find((e) => e.id === command)
+  if (!target || target.id === currentEnterprise.value.id) return
+  try {
+    await ElMessageBox.confirm(`确定切换到“${target.name}”企业吗？`, '切换企业', {
+      type: 'info',
+      confirmButtonText: '切换',
+      cancelButtonText: '取消'
+    })
+    await switchEnterprise(target.id)
+    window.location.reload()
+  } catch (e) {
+    if (e !== 'cancel') ElMessage.error(e.message || '切换企业失败')
+  }
+}
+
 onMounted(async () => {
   try {
+    ensureDefaultEnterprise()
+    refreshEnterprises()
     await db.open()
     await seedIfEmpty()
     db.onChange(() => notifyChange())
@@ -78,6 +117,28 @@ onMounted(async () => {
           <span class="crumb">{{ route.meta.crumb || '' }}</span>
         </div>
         <div class="topbar-right">
+          <el-dropdown trigger="click" @command="handleEnterpriseCommand">
+            <span class="enterprise-chip">
+              <span>🏢</span>
+              <span class="enterprise-name">{{ currentEnterprise.name }}</span>
+              <el-icon class="enterprise-arrow"><ArrowDown /></el-icon>
+            </span>
+            <template #dropdown>
+              <el-dropdown-menu>
+                <el-dropdown-item
+                  v-for="ent in enterpriseList"
+                  :key="ent.id"
+                  :command="ent.id"
+                  :disabled="ent.id === currentEnterprise.id"
+                >
+                  {{ ent.name }}
+                  <span v-if="ent.id === currentEnterprise.id" class="muted">（当前）</span>
+                </el-dropdown-item>
+                <el-dropdown-item divided command="manage">管理企业</el-dropdown-item>
+              </el-dropdown-menu>
+            </template>
+          </el-dropdown>
+          <span class="divider">|</span>
           <span class="today">{{ todayText }}</span>
           <span class="divider">|</span>
           <span class="user-chip">{{ userText }}</span>
@@ -88,6 +149,7 @@ onMounted(async () => {
       </el-main>
     </el-container>
   </el-container>
+  <EnterpriseManager v-model="managerVisible" @changed="refreshEnterprises" />
 </template>
 
 <style scoped>
@@ -146,6 +208,22 @@ onMounted(async () => {
 .topbar-left h1 { font-size: 17px; margin: 0; }
 .crumb { font-size: 12px; color: #8a9098; }
 .topbar-right { display: flex; align-items: center; gap: 10px; font-size: 13px; color: #555; }
+.enterprise-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 10px;
+  border: 1px solid #dcdfe6;
+  border-radius: 14px;
+  background: #fff;
+  color: #333;
+  cursor: pointer;
+  transition: border-color .2s;
+}
+.enterprise-chip:hover { border-color: #d9a441; }
+.enterprise-name { max-width: 140px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.enterprise-arrow { font-size: 12px; color: #909399; }
+.muted { color: #a8abb2; font-size: 12px; }
 .divider { color: #ccc; }
 .content {
   background: #f5f6f4;

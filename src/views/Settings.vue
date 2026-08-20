@@ -5,6 +5,7 @@ import { useAppStore } from '@/stores/app'
 import { chooseFolder, exportToFolder } from '@/services/filestore'
 import { check, initLocalVersion, apply } from '@/services/updater'
 import { db } from '@/services/db'
+import { getCurrentEnterprise } from '@/services/enterprise'
 
 const appStore = useAppStore()
 const profile = ref(Object.assign({}, appStore.profile))
@@ -51,15 +52,23 @@ async function checkUpdate() {
 }
 
 async function exportBackup() {
+  const ent = getCurrentEnterprise()
   const stores = db.listStores().filter((s) => s !== 'attachment' && s !== 'file_store')
-  const data = { app: 'hr_workbench', version: 1, exportedAt: new Date().toISOString(), stores: {} }
+  const data = {
+    app: 'hr_workbench',
+    version: 1,
+    enterpriseId: ent.id,
+    enterpriseName: ent.name,
+    exportedAt: new Date().toISOString(),
+    stores: {}
+  }
   for (const store of stores) {
     data.stores[store] = await db.getAll(store, { includeDeleted: true })
   }
   const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' })
   const a = document.createElement('a')
   a.href = URL.createObjectURL(blob)
-  a.download = `hr-workbench-backup-${new Date().toISOString().slice(0, 10)}.json`
+  a.download = `hr-workbench-backup-${ent.name}-${new Date().toISOString().slice(0, 10)}.json`
   a.click()
   URL.revokeObjectURL(a.href)
   ElMessage.success('备份已导出')
@@ -72,6 +81,19 @@ async function importBackup(e) {
   const text = await file.text()
   const data = JSON.parse(text)
   if (!data || !data.stores) { ElMessage.error('备份文件格式不正确'); return }
+  const currentEnt = getCurrentEnterprise()
+  if (data.enterpriseId && data.enterpriseId !== currentEnt.id) {
+    try {
+      await ElMessageBox.confirm(
+        `备份来自“${data.enterpriseName || '其他企业'}”，恢复将覆盖当前企业“${currentEnt.name}”的数据。确定继续吗？`,
+        '跨企业恢复确认',
+        { type: 'warning', confirmButtonText: '覆盖恢复', cancelButtonText: '取消' }
+      )
+    } catch (err) {
+      if (err !== 'cancel') ElMessage.error(err.message || '恢复取消')
+      return
+    }
+  }
   for (const store of Object.keys(data.stores)) {
     if (store === 'attachment' || store === 'file_store') continue
     await db.clear(store)

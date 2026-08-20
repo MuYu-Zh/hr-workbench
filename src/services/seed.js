@@ -130,6 +130,8 @@ const DEMO_EMPLOYEES = [
 ]
 
 export async function loadDemoEmployees() {
+  // 示例员工只允许写入默认企业，新企业保持空数据空间
+  if (db.currentEnterpriseId !== 'default') return { skipped: true, count: 0, reason: '非默认企业不生成示例员工' }
   const emps = await db.getAll('employee')
   if (emps.length > 0) return { skipped: true, count: emps.length }
   await db.bulkAdd('employee', DEMO_EMPLOYEES)
