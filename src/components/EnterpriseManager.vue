@@ -8,14 +8,13 @@ import {
   createEnterprise,
   renameEnterprise,
   archiveEnterprise,
-  restoreEnterprise,
-  switchEnterprise
+  restoreEnterprise
 } from '@/services/enterprise'
 
 const props = defineProps({
   modelValue: { type: Boolean, default: false }
 })
-const emit = defineEmits(['update:modelValue', 'changed'])
+const emit = defineEmits(['update:modelValue', 'changed', 'created'])
 
 const activeList = ref([])
 const archivedList = ref([])
@@ -40,9 +39,7 @@ async function handleCreate() {
     newName.value = ''
     load()
     emit('changed')
-    await switchEnterprise(ent.id)
-    ElMessage.success(`企业“${ent.name}”已创建并切换`)
-    window.location.reload()
+    emit('created', ent.id)
   } catch (e) {
     ElMessage.warning(e.message || '创建失败')
   }

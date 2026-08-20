@@ -22,6 +22,7 @@ const appStore = useAppStore()
 const managerVisible = ref(false)
 const enterpriseList = ref([])
 const currentEnterprise = ref({ id: 'default', name: '默认企业' })
+const enterpriseVersion = ref(0)
 
 function refreshEnterprises() {
   enterpriseList.value = getEnterprises()
@@ -37,24 +38,43 @@ const todayText = computed(() => {
 
 const userText = computed(() => '👤 ' + (appStore.profile.name || '本地用户'))
 
+async function switchToEnterprise(id, confirm = true) {
+  const target = enterpriseList.value.find((e) => e.id === id) || getEnterprises().find((e) => e.id === id)
+  if (!target || target.id === currentEnterprise.value.id) return
+  if (confirm) {
+    try {
+      await ElMessageBox.confirm(`确定切换到“${target.name}”企业吗？`, '切换企业', {
+        type: 'info',
+        confirmButtonText: '切换',
+        cancelButtonText: '取消'
+      })
+    } catch (e) {
+      if (e !== 'cancel') ElMessage.error(e.message || '切换企业失败')
+      return
+    }
+  }
+  try {
+    await switchEnterprise(target.id)
+    refreshEnterprises()
+    appStore.refreshSettings()
+    enterpriseVersion.value++
+    ElMessage.success(`已切换到“${target.name}”`)
+  } catch (e) {
+    ElMessage.error(e.message || '切换企业失败')
+  }
+}
+
 async function handleEnterpriseCommand(command) {
   if (command === 'manage') {
     managerVisible.value = true
     return
   }
-  const target = enterpriseList.value.find((e) => e.id === command)
-  if (!target || target.id === currentEnterprise.value.id) return
-  try {
-    await ElMessageBox.confirm(`确定切换到“${target.name}”企业吗？`, '切换企业', {
-      type: 'info',
-      confirmButtonText: '切换',
-      cancelButtonText: '取消'
-    })
-    await switchEnterprise(target.id)
-    window.location.reload()
-  } catch (e) {
-    if (e !== 'cancel') ElMessage.error(e.message || '切换企业失败')
-  }
+  await switchToEnterprise(command)
+}
+
+async function handleCreated(id) {
+  managerVisible.value = false
+  await switchToEnterprise(id, false)
 }
 
 onMounted(async () => {
@@ -145,11 +165,11 @@ onMounted(async () => {
         </div>
       </el-header>
       <el-main class="content">
-        <router-view />
+        <router-view :key="enterpriseVersion" />
       </el-main>
     </el-container>
   </el-container>
-  <EnterpriseManager v-model="managerVisible" @changed="refreshEnterprises" />
+  <EnterpriseManager v-model="managerVisible" @changed="refreshEnterprises" @created="handleCreated" />
 </template>
 
 <style scoped>

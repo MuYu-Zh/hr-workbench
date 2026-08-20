@@ -30,6 +30,9 @@ export const useAppStore = defineStore('app', {
     uiState: ls.get('hr.ui.state', { openGroups: {}, active: '/dashboard' })
   }),
   actions: {
+    refreshSettings() {
+      this.settings = Object.assign({}, DEFAULT_SETTINGS, ls.get(settingsStorageKey(), {}))
+    },
     saveSettings(patch) {
       this.settings = Object.assign({}, this.settings, patch)
       ls.set(settingsStorageKey(), this.settings)

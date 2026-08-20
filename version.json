@@ -1,10 +1,12 @@
 {
-  "version": "1.2.0",
+  "version": "1.3.0",
   "name": "人事工作台",
   "repo": "MuYu-Zh/hr-workbench",
   "branch": "main",
-  "updatedAt": "2026-08-17",
+  "updatedAt": "2026-08-20",
   "notes": [
+    "新增企业切换与数据隔离：不同企业使用独立数据空间",
+    "顶部导航支持企业切换、企业管理与归档恢复",
     "全项目迁移至 Vue 3 + Vite + Element Plus",
     "新增招聘管理模块：招聘需求、候选人、面试、offer、渠道统计",
     "保留 PWA、文件存储、自动更新与 Electron 桌面端"
